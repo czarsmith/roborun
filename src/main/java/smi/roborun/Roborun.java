@@ -1,39 +1,61 @@
 package smi.roborun;
 
-import java.io.File;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 
-import robocode.control.BattleSpecification;
-import robocode.control.BattlefieldSpecification;
-import robocode.control.RobocodeEngine;
-import robocode.control.RobotSpecification;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class Roborun {
-  public static final void main(String... args) {
-    File robocodeDir = new File("/home/czarsmith/robocode");
+import smi.roborun.ctl.BattleController;
+import smi.roborun.ui.MeleeBracket;
+import smi.roborun.ui.NavButton;
+import smi.roborun.ui.Participants;
+import smi.roborun.ui.VsBracket;
+
+public class Roborun extends JFrame {
+  private static final String PARTICIPANTS_TAB = "participants-tab";
+  private static final String MELEE_TAB = "melee-tab";
+  private static final String VS_TAB = "vs-tab";
+
+  private BattleController ctl;
+  private CardLayout tabs;
+
+  public Roborun() {
+    ctl = new BattleController();
     
-    int tps = 300;
-    int numberOfRounds = 3;
-    int battlefieldWidth = 800;
-    int battlefieldHeight = 800;
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setUndecorated(true);
+    setLayout(new BorderLayout());
+    setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-    var config = new RobocodeConfig(robocodeDir);
-    config.setTps(tps);
-    config.setVisibleGround(false);
-    config.setVisibleScanArcs(false);
-    config.setWindowSize(0, 0, 170 + battlefieldWidth, 140 + battlefieldHeight);
-    config.apply();
+    tabs = new CardLayout();
+    JPanel center = new JPanel();
+    center.setLayout(tabs);
+    center.add(new Participants(ctl), PARTICIPANTS_TAB);
+    center.add(new MeleeBracket(ctl), MELEE_TAB);
+    center.add(new VsBracket(ctl), VS_TAB);
 
-    RobocodeEngine.setLogMessagesEnabled(false);
-    RobocodeEngine engine = new RobocodeEngine(robocodeDir);
-    engine.addBattleListener(new BattleObserver());
-    engine.setVisible(true);
+    JPanel nav = new JPanel();
+    nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
+    nav.add(new NavButton("Close", e -> this.exit()));
+    nav.add(new NavButton("Start", e -> ctl.execute()));
+    nav.add(new NavButton("Participants", e -> tabs.show(center, PARTICIPANTS_TAB)));
+    nav.add(new NavButton("Melee Bracket", e -> tabs.show(center, MELEE_TAB)));
+    nav.add(new NavButton("1v1 Bracket", e -> tabs.show(center, VS_TAB)));
 
-    BattlefieldSpecification battlefield = new BattlefieldSpecification(battlefieldWidth, battlefieldHeight);
-    RobotSpecification[] selectedRobots = engine.getLocalRepository("sample.RamFire,sample.Corners");
-    BattleSpecification battleSpec = new BattleSpecification(numberOfRounds, battlefield, selectedRobots);
-    engine.runBattle(battleSpec, true);
-    engine.close();
+    getContentPane().add(nav, BorderLayout.WEST);
+    getContentPane().add(center, BorderLayout.CENTER);
+    setVisible(true);
+  }
 
+  private void exit() {
+    dispose();
     System.exit(0);
+  }
+
+  public static final void main(String... args) throws Exception {
+    RoborunLaf.configureLaf();
+    new Roborun();
   }
 }
