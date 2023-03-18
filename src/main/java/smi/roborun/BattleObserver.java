@@ -6,14 +6,11 @@ import robocode.control.events.BattleErrorEvent;
 import robocode.control.events.BattleMessageEvent;
 
 public class BattleObserver extends BattleAdaptor {
-  // Called when the battle is completed successfully with battle results
   public void onBattleCompleted(BattleCompletedEvent e) {
     System.out.println("-- Battle has completed --");
-    
-    // Print out the sorted results with the robot names
     System.out.println("Battle results:");
     for (robocode.BattleResults result : e.getSortedResults()) {
-        System.out.println("  " + result.getTeamLeaderName() + ": " + result.getScore());
+      System.out.println("  " + result.getTeamLeaderName() + ": " + result.getScore());
     }
   }
 
