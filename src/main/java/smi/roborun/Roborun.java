@@ -2,6 +2,8 @@ package smi.roborun;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -39,7 +41,12 @@ public class Roborun extends JFrame {
     JPanel nav = new JPanel();
     nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
     nav.add(new NavButton("Close", e -> this.exit()));
-    nav.add(new NavButton("Start", e -> ctl.execute()));
+    nav.add(new NavButton("Start", e -> {
+      ctl.execute();
+      CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
+        ctl.setTps(50);
+      });
+    }));
     nav.add(new NavButton("Participants", e -> tabs.show(center, PARTICIPANTS_TAB)));
     nav.add(new NavButton("Melee Bracket", e -> tabs.show(center, MELEE_TAB)));
     nav.add(new NavButton("1v1 Bracket", e -> tabs.show(center, VS_TAB)));
