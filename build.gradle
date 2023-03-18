@@ -1,0 +1,21 @@
+plugins {
+  id "java"
+}
+
+java { sourceCompatibility = JavaVersion.VERSION_17 }
+
+dependencies {
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\robocode.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\annotations-13.0.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\commons-lang3-3.12.0.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\org.osgi.service.prefs-1.1.2.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\robocode.battle-1.9.5.0.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\bcel-6.6.1.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\kotlin-stdlib-1.7.22.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\osgi.annotation-8.0.1.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\robocode.core-1.9.5.0.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\robocode.repository-1.9.5.0.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\codesize-1.2.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\kotlin-stdlib-common-1.7.22.jar")
+  implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\picocontainer-2.15.jar")
+}

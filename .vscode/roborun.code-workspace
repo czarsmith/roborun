@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"java.import.gradle.home": "/home/czarsmith/gradle-8.0.2",
+		"java.import.gradle.java.home": "/home/czarsmith/jdk-19.0.2",
+		"java.import.gradle.wrapper.enabled": false
+	}
+}
