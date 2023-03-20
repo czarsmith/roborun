@@ -2,6 +2,10 @@ plugins {
   id "java"
 }
 
+repositories {
+  mavenCentral()
+}
+
 java { sourceCompatibility = JavaVersion.VERSION_17 }
 
 dependencies {
@@ -18,4 +22,6 @@ dependencies {
   implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\codesize-1.2.jar")
   implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\kotlin-stdlib-common-1.7.22.jar")
   implementation files(System.getenv("ROBOCODE_HOME") + "\\libs\\picocontainer-2.15.jar")
+
+  implementation "org.apache.xmlgraphics:batik-transcoder:1.+"
 }

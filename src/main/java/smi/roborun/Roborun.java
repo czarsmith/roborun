@@ -5,9 +5,11 @@ import java.awt.CardLayout;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import smi.roborun.ctl.BattleController;
 import smi.roborun.ui.MeleeBracket;
@@ -39,18 +41,21 @@ public class Roborun extends JFrame {
     center.add(new VsBracket(ctl), VS_TAB);
 
     JPanel nav = new JPanel();
+    nav.setBorder(new EmptyBorder(8, 8, 8, 8));
     nav.setLayout(new BoxLayout(nav, BoxLayout.Y_AXIS));
-    nav.add(new NavButton("Close", e -> this.exit()));
-    nav.add(new NavButton("Start", e -> {
+    nav.add(Box.createVerticalGlue());
+    nav.add(new NavButton("Settings", "/icons/gear-solid.svg", e -> tabs.show(center, PARTICIPANTS_TAB)));
+    nav.add(new NavButton("Start", "/icons/play-solid.svg", e -> {
       ctl.execute();
       CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
         ctl.setTps(50);
       });
     }));
-    nav.add(new NavButton("Participants", e -> tabs.show(center, PARTICIPANTS_TAB)));
-    nav.add(new NavButton("Melee Bracket", e -> tabs.show(center, MELEE_TAB)));
-    nav.add(new NavButton("1v1 Bracket", e -> tabs.show(center, VS_TAB)));
-
+    nav.add(new NavButton("Melee", "/icons/people-group-solid.svg", e -> tabs.show(center, MELEE_TAB)));
+    nav.add(new NavButton("1v1", "/icons/people-arrows-solid.svg", e -> tabs.show(center, VS_TAB)));
+    nav.add(Box.createVerticalGlue());
+    nav.add(new NavButton("Close", "/icons/square-xmark-solid.svg", e -> this.exit()));
+    
     getContentPane().add(nav, BorderLayout.WEST);
     getContentPane().add(center, BorderLayout.CENTER);
     setVisible(true);
