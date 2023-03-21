@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "HelloFx",
+      "request": "launch",
+      "mainClass": "smi.roborun.HelloFx",
+      "projectName": "roborun"
+    },
+    {
+      "type": "java",
       "name": "Current File",
       "request": "launch",
       "mainClass": "${file}"

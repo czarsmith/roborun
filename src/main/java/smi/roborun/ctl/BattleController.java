@@ -31,6 +31,7 @@ public class BattleController extends BattleAdaptor implements Runnable {
   private boolean running;
   private JSlider tpsSlider;
   private List<Integer> tpsTicks;
+  private Window robocodeWin;
 
   public BattleController() {
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
@@ -47,7 +48,7 @@ public class BattleController extends BattleAdaptor implements Runnable {
     new Thread(this).start();
 
     // Find the robocode window
-    Window robocodeWin = null;
+    robocodeWin = null;
     while (robocodeWin == null && running) {
       try { Thread.sleep(500); } catch (Exception e) {}
       robocodeWin = Stream.of(Window.getWindows())
