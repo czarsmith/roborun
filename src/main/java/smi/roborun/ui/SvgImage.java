@@ -24,7 +24,6 @@ public class SvgImage extends ImageTranscoder {
     hints.put(ImageTranscoder.KEY_DOCUMENT_ELEMENT_NAMESPACE_URI,SVGConstants.SVG_NAMESPACE_URI);
     hints.put(ImageTranscoder.KEY_DOCUMENT_ELEMENT, SVGConstants.SVG_SVG_TAG);
     hints.put(ImageTranscoder.KEY_XML_PARSER_VALIDATING, false);
-
     setTranscodingHints(hints);
 
     try (InputStream is = getClass().getResourceAsStream(uri)) {

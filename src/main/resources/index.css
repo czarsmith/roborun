@@ -1,0 +1,15 @@
+.button {
+  -fx-background-color: #444444;
+}
+
+.tool-bar {
+  -fx-background-color: #222222;
+}
+
+.region {
+  -fx-background-color: #222222;
+}
+
+.label {
+  -fx-text-fill: #FFFFFF;
+}

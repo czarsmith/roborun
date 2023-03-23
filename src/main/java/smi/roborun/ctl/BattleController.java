@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -48,22 +49,14 @@ public class BattleController extends BattleAdaptor implements Runnable {
     new Thread(this).start();
 
     // Find the robocode window
-    robocodeWin = null;
-    while (robocodeWin == null && running) {
-      try { Thread.sleep(500); } catch (Exception e) {}
-      robocodeWin = Stream.of(Window.getWindows())
-        .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
-        .findAny().orElse(null);
-    }
+    robocodeWin = until(() -> Stream.of(Window.getWindows())
+      .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
+      .findAny().orElse(null));
 
-    Component cmp = findComponent(robocodeWin, c -> c instanceof JSlider);
-    System.out.println(cmp);
-    System.out.println("slider value: " + ((JSlider)cmp).getValue());
-    tpsSlider = (JSlider)cmp;
-    System.out.println("Minimum: " + tpsSlider.getMinimum());
-    System.out.println("Maximum: " + tpsSlider.getMaximum());
-    System.out.println("Major Tick Spacing: " + tpsSlider.getMajorTickSpacing());
-    System.out.println("Minor Tick Spacing: " + tpsSlider.getMinorTickSpacing());
+    // Find the TPS Slider
+    tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
+
+    System.out.println("Battle has started");
   }
 
   public void setTps(int tps) {
@@ -102,6 +95,15 @@ public class BattleController extends BattleAdaptor implements Runnable {
     engine.runBattle(battleSpec, true);
     engine.close();
     running = false;
+  }
+
+  private <T> T until(Supplier<T> supplier) {
+    T result = supplier.get();
+    while (result == null && running) {
+      try { Thread.sleep(200); } catch (Exception e) {}
+      result = supplier.get();
+    }
+    return result;
   }
 
   private Component findComponent(Component comp, Predicate<Component> matcher) {
