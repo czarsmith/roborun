@@ -30,13 +30,11 @@ public class Roborun extends Application {
     VsPane vsPane = new VsPane(ctl);
     CardPane center = new CardPane(settingsPane, meleePane, vsPane);
 
-    Button closeBtn = new SvgButton("/icons/square-xmark-solid.svg");
-    closeBtn.setOnAction(e -> {
+    Button closeBtn = new SvgButton("/icons/square-xmark-solid.svg", e -> {
       Platform.exit(); // For JavaFx
       System.exit(0); // For Robocode
     });
-    Button startBtn = new SvgButton("/icons/play-solid.svg");
-    startBtn.setOnAction(e -> {
+    Button startBtn = new SvgButton("/icons/play-solid.svg", e -> {
       ctl.execute();
       ctl.setTps(25);
       CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
