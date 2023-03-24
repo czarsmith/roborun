@@ -42,4 +42,5 @@ dependencies {
   implementation files(System.getenv("ROBOCODE_HOME") + "/libs/picocontainer-2.15.jar")
 
   implementation "org.apache.xmlgraphics:batik-transcoder:1.+"
+  implementation "com.fasterxml.jackson.core:jackson-databind:2.14.+"
 }

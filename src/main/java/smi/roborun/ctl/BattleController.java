@@ -64,7 +64,7 @@ public class BattleController extends BattleAdaptor {
   }
 
   public void execute(Tourney tourney) {
-    new Thread(new TourneyThread(tourney)).start();
+    //new Thread(new TourneyThread(tourney)).start();
   }
 
   private class TourneyThread implements Runnable {
