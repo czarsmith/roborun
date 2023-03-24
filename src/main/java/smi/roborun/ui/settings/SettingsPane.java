@@ -37,13 +37,12 @@ public class SettingsPane extends GridPane {
 //    participantGrid.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     TableColumn<Robot, Boolean> selectedCol = UiUtil.tableCol("Selected", cd -> cd.getValue().getSelectedProperty());
     selectedCol.setCellFactory(col -> new CheckBoxTableCell<>());
-    robotGrid.getColumns().addAll(
-      selectedCol,
-      UiUtil.<Robot, String>tableCol("Author", c -> c.getValue().getAuthorProperty()),
-      UiUtil.<Robot, String>tableCol("Robot", c -> c.getValue().getRobotNameProperty()),
-      UiUtil.<Robot, Long>tableCol("Code Size", c -> c.getValue().getCodeSizeProperty()));
+    robotGrid.getColumns().add(selectedCol);
+    robotGrid.getColumns().add(UiUtil.<Robot, String>tableCol("Author", c -> c.getValue().getAuthorProperty()));
+    robotGrid.getColumns().add(UiUtil.<Robot, String>tableCol("Robot", c -> c.getValue().getRobotNameProperty()));
+    robotGrid.getColumns().add(UiUtil.<Robot, Long>tableCol("Code Size", c -> c.getValue().getCodeSizeProperty()));
     robotGrid.getItems().addAll(robots);
     this.add(robotGrid, 0, 0);
-    this.setHgrow(robotGrid, Priority.ALWAYS);
+    GridPane.setHgrow(robotGrid, Priority.ALWAYS);
   }
 }
