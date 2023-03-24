@@ -1,6 +1,8 @@
 package smi.roborun.ui.widgets;
 
 import javafx.beans.value.ObservableValue;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.layout.HBox;
@@ -22,5 +24,9 @@ public class UiUtil {
     TableColumn<T, F> col = new TableColumn<>(title);
     col.setCellValueFactory(callback);
     return col;
+  }
+
+  public static void error(String message) {
+    new Alert(AlertType.ERROR, message).showAndWait();
   }
 }

@@ -29,9 +29,11 @@ public class SettingsPane extends GridPane {
 
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
+  private Tourney tourney;
 
   public SettingsPane(BattleController ctl) {
     this.ctl = ctl;
+
     this.setAlignment(Pos.CENTER);
     this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
 
@@ -55,7 +57,10 @@ public class SettingsPane extends GridPane {
   public Tourney createTourney() {
     Tourney tourney = new Tourney();
     tourney.setRobots(robots.filtered(Robot::getSelected));
-
+    if (tourney.getRobots().size() < 2) {
+      UiUtil.error("You must select at least two robots.");
+    }
+    
     List<Battle> battles = new ArrayList<>();
     Battle b = new Battle();
     b.setRobots(tourney.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()));
