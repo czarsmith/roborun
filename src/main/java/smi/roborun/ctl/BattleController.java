@@ -20,6 +20,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 
+import org.apache.commons.lang3.StringUtils;
+
 import robocode.control.BattleSpecification;
 import robocode.control.BattlefieldSpecification;
 import robocode.control.RobocodeEngine;
@@ -30,8 +32,10 @@ import robocode.control.events.BattleErrorEvent;
 import robocode.control.events.BattleFinishedEvent;
 import robocode.control.events.BattleMessageEvent;
 import smi.roborun.RobocodeConfig;
+import smi.roborun.mdl.Battle;
+import smi.roborun.mdl.Tourney;
 
-public class BattleController extends BattleAdaptor implements Runnable {
+public class BattleController extends BattleAdaptor {
   private RobocodeEngine engine;
   private boolean running;
   private JSlider tpsSlider;
@@ -59,9 +63,27 @@ public class BattleController extends BattleAdaptor implements Runnable {
     return Arrays.asList(engine.getLocalRepository());
   }
 
-  public void execute() {
-    running = true;
-    new Thread(this).start();
+  public void execute(Tourney tourney) {
+    new Thread(new TourneyThread(tourney)).start();
+  }
+
+  private class TourneyThread implements Runnable {
+    private Tourney tourney;
+
+    public TourneyThread(Tourney tourney) {
+      this.tourney = tourney;
+    }
+
+    public void run() {
+      running = true;
+      tourney.getBattles().forEach(b -> executeBattle(tourney, b));
+      running = false;
+    }  
+  }
+
+  private void executeBattle(Tourney tourney, Battle battle) {
+    Thread battleThread = new Thread(new BattleThread(tourney, battle));
+    battleThread.start();
 
     // Find the robocode window
     robocodeWin = until(() -> Stream.of(Window.getWindows())
@@ -75,6 +97,12 @@ public class BattleController extends BattleAdaptor implements Runnable {
     tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
 
     System.out.println("Battle has started");
+
+    try {
+      battleThread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   public void setTps(int tps) {
@@ -87,27 +115,31 @@ public class BattleController extends BattleAdaptor implements Runnable {
     }
   }
 
-  public void run() {
-    int tps = 25;
-    int numberOfRounds = 3;
-    int battlefieldWidth = 800;
-    int battlefieldHeight = 800;
+  private class BattleThread implements Runnable {
+    private Tourney tourney;
+    private Battle battle;
 
-    var config = new RobocodeConfig(robocodeDir);
-    config.setTps(tps);
-    config.setVisibleGround(false);
-    config.setVisibleScanArcs(false);
-    config.setWindowSize(0, 0, 170 + battlefieldWidth, 140 + battlefieldHeight);
-    config.apply();
+    BattleThread(Tourney tourney, Battle battle) {
+      this.tourney = tourney;
+      this.battle = battle;
+    }
 
-    BattlefieldSpecification battlefield = new BattlefieldSpecification(battlefieldWidth, battlefieldHeight);
-    RobotSpecification[] selectedRobots = engine.getLocalRepository("sample.RamFire,sample.Corners");
-    BattleSpecification battleSpec = new BattleSpecification(numberOfRounds, battlefield, selectedRobots);
+    public void run() {
+      var config = new RobocodeConfig(robocodeDir);
+      config.setTps(battle.getTps());
+      config.setVisibleGround(false);
+      config.setVisibleScanArcs(false);
+      config.setWindowSize(0, 0, 170 + battle.getBattlefieldWidth(), 140 + battle.getBattlefieldHeight());
+      config.apply();
 
-    engine.setVisible(true);
-    engine.runBattle(battleSpec, true);
-    engine.close();
-    running = false;
+      BattlefieldSpecification battlefield = new BattlefieldSpecification(battle.getBattlefieldWidth(), battle.getBattlefieldHeight());
+      RobotSpecification[] selectedRobots = engine.getLocalRepository(StringUtils.join(battle.getRobots(),","));
+      BattleSpecification battleSpec = new BattleSpecification(battle.getRounds(), battlefield, selectedRobots);
+
+      engine.setVisible(true);
+      engine.runBattle(battleSpec, true);
+      engine.close();
+    }
   }
 
   private <T> T until(Supplier<T> supplier) {

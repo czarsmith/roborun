@@ -1,8 +1,5 @@
 package smi.roborun;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -35,11 +32,7 @@ public class Roborun extends Application {
       System.exit(0); // For Robocode
     });
     Button startBtn = new SvgButton("/icons/play-solid.svg", e -> {
-      ctl.execute();
-      ctl.setTps(25);
-      CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
-        ctl.setTps(300);
-      });
+      ctl.execute(settingsPane.createTourney());
     });
     Button settingsBtn = new SvgButton("/icons/gear-solid.svg", e -> center.show(settingsPane));
     Button meleeBtn = new SvgButton("/icons/people-group-solid.svg", e -> center.show(meleePane));

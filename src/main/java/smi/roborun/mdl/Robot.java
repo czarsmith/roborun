@@ -1,4 +1,4 @@
-package smi.roborun.ui.settings;
+package smi.roborun.mdl;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,6 +30,14 @@ public class Robot {
     return selected;
   }
 
+  public boolean getSelected() {
+    return selected.get();
+  }
+
+  public void setSelected(boolean selected) {
+    this.selected.set(selected);
+  }
+
   public StringProperty getAuthorProperty() {
     return author;
   }
@@ -38,6 +46,14 @@ public class Robot {
     return robotName;
   }
 
+  public String getRobotName() {
+    return robotName.get();
+  }
+
+  public void setRobotName(String robotName) {
+    this.robotName.set(robotName);
+  }
+  
   public ObjectProperty<Long> getCodeSizeProperty() {
     return codeSize;
   }

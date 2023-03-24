@@ -1,5 +1,7 @@
 package smi.roborun.ui.settings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javafx.collections.FXCollections;
@@ -16,6 +18,10 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import smi.roborun.ctl.BattleController;
+import smi.roborun.mdl.Battle;
+import smi.roborun.mdl.Battle.BattleType;
+import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
 
 public class SettingsPane extends GridPane {
@@ -44,5 +50,19 @@ public class SettingsPane extends GridPane {
     robotGrid.getItems().addAll(robots);
     this.add(robotGrid, 0, 0);
     GridPane.setHgrow(robotGrid, Priority.ALWAYS);
+  }
+
+  public Tourney createTourney() {
+    Tourney tourney = new Tourney();
+    tourney.setRobots(robots.filtered(Robot::getSelected));
+
+    List<Battle> battles = new ArrayList<>();
+    Battle b = new Battle();
+    b.setRobots(tourney.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()));
+    b.setType(BattleType.MELEE);
+    battles.add(b);
+    
+    tourney.setBattles(battles);
+    return tourney;
   }
 }
