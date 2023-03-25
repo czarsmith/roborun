@@ -3,22 +3,24 @@ package smi.roborun.mdl;
 import java.util.ArrayList;
 import java.util.List;
 
+import robocode.BattleResults;
+
 public class Battle {
   public enum BattleType { MELEE, VS };
 
   private Long id;
   private BattleType type;
-  private Integer round;
-  private Integer match;
-  private Integer rounds;
+  private Integer roundNumber;
+  private Integer battleNumber;
+  private Integer numRounds;
   private Integer battlefieldWidth;
   private Integer battlefieldHeight;
   private Integer tps;
-  private List<String> robots;
-  private List<BattleResult> results;
+  private List<Robot> robots;
+  private List<BattleResults> results;
 
   public Battle() {
-    rounds = 3;
+    numRounds = 3;
     battlefieldWidth = 800;
     battlefieldHeight = 800;
     tps = 25;
@@ -38,24 +40,24 @@ public class Battle {
   public void setType(BattleType type) {
     this.type = type;
   }
-  public Integer getRound() {
-    return round;
+  public Integer getRoundNumber() {
+    return roundNumber;
   }
-  public void setRound(Integer round) {
-    this.round = round;
+  public void setRoundNumber(Integer roundNumber) {
+    this.roundNumber = roundNumber;
   }
-  public Integer getMatch() {
-    return match;
+  public Integer getBattleNumber() {
+    return battleNumber;
   }
-  public void setMatch(Integer match) {
-    this.match = match;
+  public void setBattleNumber(Integer battleNumber) {
+    this.battleNumber = battleNumber;
   }
-  public Integer getRounds() {
-    return rounds;
+  public Integer getNumRounds() {
+    return numRounds;
   }
 
-  public void setRounds(Integer rounds) {
-    this.rounds = rounds;
+  public void setNumRounds(Integer numRounds) {
+    this.numRounds = numRounds;
   }
 
   public Integer getBattlefieldWidth() {
@@ -74,16 +76,16 @@ public class Battle {
     this.battlefieldHeight = battlefieldHeight;
   }
 
-  public List<String> getRobots() {
+  public List<Robot> getRobots() {
     return robots;
   }
-  public void setRobots(List<String> robots) {
+  public void setRobots(List<Robot> robots) {
     this.robots = robots;
   }
-  public List<BattleResult> getResults() {
+  public List<BattleResults> getResults() {
     return results;
   }
-  public void setResults(List<BattleResult> results) {
+  public void setResults(List<BattleResults> results) {
     this.results = results;
   }
 

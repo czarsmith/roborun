@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,10 +22,13 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
+import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
+import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
 
@@ -36,6 +40,7 @@ public class SettingsPane extends GridPane {
 
   public SettingsPane(BattleController ctl) {
     this.ctl = ctl;
+    ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
 
     this.setAlignment(Pos.CENTER);
     this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
@@ -69,7 +74,7 @@ public class SettingsPane extends GridPane {
     // Log the entire tournament model
     try {
       ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-      System.out.println(om.writeValueAsString(tourney));  
+//      System.out.println(om.writeValueAsString(tourney));  
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -99,38 +104,55 @@ public class SettingsPane extends GridPane {
     while (totalRobots > Math.pow(2, numRounds - 1) * tourney.getMaxMeleeSize()){
       numRounds++; // There has to be a better way to calculate this
     }
-
-    int numBattles = (int)Math.pow(2, numRounds) - 1;
-    double robotsPerMatch = totalRobots / Math.pow(2, numRounds - 1);
-    int numStragglers = (int)(Math.pow(2, numRounds - 1) * (robotsPerMatch - (int)robotsPerMatch));
-    int currRound = 1;
-    int currRobotsInRound = 0;
-    for (int idx = 0; idx < numBattles; idx++) {
-      if (numBattles + 1 - idx == (int)Math.pow(2, numRounds - currRound)) {
-        currRound++; // There has to be a better way to calculate this
-      }
-
-      Battle battle = new Battle();
-      battle.setType(BattleType.MELEE);
-      battle.setBattlefieldHeight(tourney.getMeleeBattlefieldWidth());
-      battle.setBattlefieldHeight(tourney.getMeleeBattlefieldHeight());
-      battle.setRounds(tourney.getNumMeleeRoundsPerBattle());
-      battle.setTps(tourney.getDesiredTps());
-      battle.setRound(currRound);
-      battle.setMatch(idx % (int)Math.pow(2, numRounds - battle.getRound()) + 1);
-      if (battle.getRound() == 1) {
-        // Only the first round has robots initially.  The subsequent rounds will be
-        // determined later based on the results of the first round.
-        int robotsThisMatch = battle.getMatch() <= numStragglers ? (int)Math.ceil(robotsPerMatch) : (int)Math.floor(robotsPerMatch);
-        battle.setRobots(sorted.subList(currRobotsInRound, currRobotsInRound + robotsThisMatch)
-          .stream().map(Robot::getRobotName).collect(Collectors.toList()));
-        currRobotsInRound += robotsThisMatch;
-      }
-      tourney.getBattles().add(battle);
+    for (int i = 0; i < numRounds; i++) {
+      tourney.getMeleeRounds().add(new Round(i + 1, (int)Math.pow(2, numRounds - i - 1)));
     }
+
+    // Initialize all of the battles
+    tourney.getMeleeRounds().forEach(meleeRound -> {
+      IntStream.range(0, meleeRound.getNumBattles()).forEach(battleIdx -> {
+        Battle battle = new Battle();
+        battle.setType(BattleType.MELEE);
+        battle.setBattlefieldHeight(tourney.getMeleeBattlefieldWidth());
+        battle.setBattlefieldHeight(tourney.getMeleeBattlefieldHeight());
+        battle.setNumRounds(tourney.getNumMeleeRoundsPerBattle());
+        battle.setTps(tourney.getDesiredTps());
+        battle.setRoundNumber(meleeRound.getRoundNumber());
+        battle.setBattleNumber(battleIdx + 1);
+        meleeRound.getBattles().add(battle);
+      });  
+    });
+
+    // Distribute all of the robots evenly in the first melee round
+    Round firstMeleeRound = tourney.getMeleeRounds().get(0);
+    IntStream.range(0, sorted.size()).forEach(robotIdx ->
+      firstMeleeRound.getBattles().get(robotIdx % firstMeleeRound.getNumBattles())
+        .getRobots().add(sorted.get(robotIdx)));
   }
 
   private void createVsBattles(Tourney tourney) {
 
+  }
+
+  private void onBattleFinished(BattleEvent e) {
+    System.out.println("move robots to the next round");
+    Tourney tourney = e.getTourney();
+    Round round = e.getRound();
+    Battle battle = e.getBattle();
+    System.out.println("Round " + round.getRoundNumber() + " Battle " + battle.getBattleNumber());
+    battle.getResults().forEach(br -> {
+      System.out.println(br.getTeamLeaderName() + " " + br.getScore());
+    });
+    if (round.getNumBattles() > 1) {
+      battle.getResults().subList(0, battle.getResults().size() / 2).stream()
+        .forEach(br -> System.out.println(br.getTeamLeaderName()));
+      List<Robot> topFinishers = battle.getResults().subList(0, battle.getResults().size() / 2).stream()
+        .map(BattleResults::getTeamLeaderName)
+        .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
+        .collect(Collectors.toList());
+      System.out.println("Top finishers: " + topFinishers);
+      Round nextRound = tourney.getMeleeRounds().get(round.getRoundNumber());
+      nextRound.getBattles().get((battle.getBattleNumber() - 1) / 2).getRobots().addAll(topFinishers);
+    }
   }
 }

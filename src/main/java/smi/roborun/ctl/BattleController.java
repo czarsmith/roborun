@@ -15,24 +15,25 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 
 import org.apache.commons.lang3.StringUtils;
 
+import javafx.event.EventHandler;
+import javafx.event.EventType;
+import javafx.stage.Stage;
 import robocode.control.BattleSpecification;
 import robocode.control.BattlefieldSpecification;
 import robocode.control.RobocodeEngine;
 import robocode.control.RobotSpecification;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
-import robocode.control.events.BattleErrorEvent;
-import robocode.control.events.BattleFinishedEvent;
-import robocode.control.events.BattleMessageEvent;
 import smi.roborun.RobocodeConfig;
 import smi.roborun.mdl.Battle;
+import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
@@ -41,9 +42,15 @@ public class BattleController extends BattleAdaptor {
   private JSlider tpsSlider;
   private List<Integer> tpsTicks;
   private Window robocodeWin;
-  File robocodeDir;
+  private File robocodeDir;
+  private Stage stage;
+  private Tourney tourney;
+  private Round currRound;
+  private Battle currBattle;
 
-  public BattleController() {
+  public BattleController(Stage stage) {
+    this.stage = stage;
+
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
     // in order to determine which slider tick corresponds to each TPS value.
     tpsTicks = new ArrayList<>();
@@ -64,42 +71,46 @@ public class BattleController extends BattleAdaptor {
   }
 
   public void execute(Tourney tourney) {
-    //new Thread(new TourneyThread(tourney)).start();
+    this.tourney = tourney;
+    new Thread(new TourneyThread()).start();
   }
 
   private class TourneyThread implements Runnable {
-    private Tourney tourney;
-
-    public TourneyThread(Tourney tourney) {
-      this.tourney = tourney;
-    }
-
     public void run() {
       running = true;
-      tourney.getBattles().forEach(b -> executeBattle(tourney, b));
+      // Execute melee battles
+      tourney.getMeleeRounds().forEach(meleeRound ->
+        meleeRound.getBattles().forEach(battle -> executeBattle(meleeRound, battle)));
       running = false;
     }  
   }
 
-  private void executeBattle(Tourney tourney, Battle battle) {
-    Thread battleThread = new Thread(new BattleThread(tourney, battle));
+  private void executeBattle(Round round, Battle battle) {
+    currRound = round;
+    currBattle = battle;
+
+    System.out.println("START Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
+
+    Thread battleThread = new Thread(new BattleThread());
     battleThread.start();
 
     // Find the robocode window
+    if (robocodeWin == null) {
     robocodeWin = until(() -> Stream.of(Window.getWindows())
       .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
       .findAny().orElse(null));
-    ((JFrame)robocodeWin).setUndecorated(true);
+//    ((JFrame)robocodeWin).setUndecorated(true);
     
-    until(() -> findComponents(robocodeWin, c -> c instanceof JMenu)).forEach(c -> ((JMenu)c).setVisible(false));
+//    until(() -> findComponents(robocodeWin, c -> c instanceof JMenu)).forEach(c -> ((JMenu)c).setVisible(false));
     
     // Find the TPS Slider
     tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
-
-    System.out.println("Battle has started");
-
+    }
+    setTps(currBattle.getTps());
+    
     try {
       battleThread.join();
+      System.out.println("DONE Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
@@ -116,29 +127,23 @@ public class BattleController extends BattleAdaptor {
   }
 
   private class BattleThread implements Runnable {
-    private Tourney tourney;
-    private Battle battle;
-
-    BattleThread(Tourney tourney, Battle battle) {
-      this.tourney = tourney;
-      this.battle = battle;
-    }
-
     public void run() {
       var config = new RobocodeConfig(robocodeDir);
-      config.setTps(battle.getTps());
+      config.setTps(currBattle.getTps());
       config.setVisibleGround(false);
       config.setVisibleScanArcs(false);
-      config.setWindowSize(0, 0, 170 + battle.getBattlefieldWidth(), 140 + battle.getBattlefieldHeight());
+      config.setWindowSize(0, 0, 170 + currBattle.getBattlefieldWidth(), 140 + currBattle.getBattlefieldHeight());
       config.apply();
 
-      BattlefieldSpecification battlefield = new BattlefieldSpecification(battle.getBattlefieldWidth(), battle.getBattlefieldHeight());
-      RobotSpecification[] selectedRobots = engine.getLocalRepository(StringUtils.join(battle.getRobots(),","));
-      BattleSpecification battleSpec = new BattleSpecification(battle.getRounds(), battlefield, selectedRobots);
+      BattlefieldSpecification battlefield = new BattlefieldSpecification(
+        currBattle.getBattlefieldWidth(), currBattle.getBattlefieldHeight());
+      RobotSpecification[] selectedRobots = engine.getLocalRepository(
+        StringUtils.join(currBattle.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()), ","));
+      BattleSpecification battleSpec = new BattleSpecification(currBattle.getNumRounds(), battlefield, selectedRobots);
 
       engine.setVisible(true);
       engine.runBattle(battleSpec, true);
-      engine.close();
+      engine.setVisible(false);
     }
   }
 
@@ -154,7 +159,8 @@ public class BattleController extends BattleAdaptor {
   }
 
   private Component findComponent(Component comp, Predicate<Component> matcher) {
-    return findComponents(comp, matcher).get(0);
+    List<Component> comps = findComponents(comp, matcher);
+    return comps.isEmpty() ? null : comps.get(0);
   }
 
   private List<Component> findComponents(Component comp, Predicate<Component> matcher) {
@@ -175,25 +181,12 @@ public class BattleController extends BattleAdaptor {
   }
 
   @Override
-  public void onBattleFinished(BattleFinishedEvent e) {
-  }
-
-  @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
-    System.out.println("-- Battle has completed --");
-    System.out.println("Battle results:");
-    for (robocode.BattleResults result : e.getSortedResults()) {
-      System.out.println("  " + result.getTeamLeaderName() + ": " + result.getScore());
-    }
+    currBattle.setResults(Arrays.asList(e.getSortedResults()));
+    stage.fireEvent(BattleEvent.finished(tourney, currRound, currBattle));
   }
 
-  @Override
-  public void onBattleMessage(BattleMessageEvent e) {
-      System.out.println("Msg> " + e.getMessage());
-  }
-
-  @Override
-  public void onBattleError(BattleErrorEvent e) {
-      System.out.println("Err> " + e.getError());
+  public void addEventHandler(EventType<BattleEvent> e, EventHandler<BattleEvent> handler) {
+    stage.addEventFilter(e, handler);
   }
 }

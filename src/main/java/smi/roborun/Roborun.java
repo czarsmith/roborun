@@ -20,7 +20,7 @@ import smi.roborun.ui.widgets.UiUtil;
 public class Roborun extends Application {
   @Override
   public void start(Stage stage) {
-    BattleController ctl = new BattleController();
+    BattleController ctl = new BattleController(stage);
 
     SettingsPane settingsPane = new SettingsPane(ctl);
     MeleePane meleePane = new MeleePane(ctl);

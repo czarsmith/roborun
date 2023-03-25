@@ -5,16 +5,17 @@ import java.util.List;
 
 public class Tourney {
   private Long maxRuntimeMillis;
+  private Integer desiredTps;
+  private List<Robot> robots;
   private Integer maxMeleeSize;
   private Integer numMeleeRoundsPerBattle;
-  private Integer numVsRoundsPerBattle;
   private Integer meleeBattlefieldWidth;
   private Integer meleeBattlefieldHeight;
+  private List<Round> meleeRounds;
+  private Integer numVsRoundsPerBattle;
   private Integer vsBattlefieldWidth;
   private Integer vsBattlefieldHeight;
-  private Integer desiredTps;
-  private List<Battle> battles;
-  private List<Robot> robots;
+  private List<Round> vsRounds;
 
   public Tourney() {
     maxRuntimeMillis = 0L;
@@ -23,10 +24,11 @@ public class Tourney {
     meleeBattlefieldHeight = 800;
     vsBattlefieldWidth = 600;
     vsBattlefieldHeight = 600;
-    desiredTps = 25;
-    numMeleeRoundsPerBattle = 100;
-    numVsRoundsPerBattle = 100;
-    battles = new ArrayList<>();
+    desiredTps = 50;
+    numMeleeRoundsPerBattle = 1;
+    numVsRoundsPerBattle = 1;
+    meleeRounds = new ArrayList<>();
+    vsRounds = new ArrayList<>();
     robots = new ArrayList<>();
   }
   
@@ -89,11 +91,20 @@ public class Tourney {
   public void setDesiredTps(Integer desiredTps) {
     this.desiredTps = desiredTps;
   }
-  public List<Battle> getBattles() {
-    return battles;
+  public List<Round> getMeleeRounds() {
+    return meleeRounds;
   }
-  public void setBattles(List<Battle> battles) {
-    this.battles = battles;
+
+  public void setMeleeRounds(List<Round> meleeRounds) {
+    this.meleeRounds = meleeRounds;
+  }
+
+  public List<Round> getVsRounds() {
+    return vsRounds;
+  }
+
+  public void setVsRounds(List<Round> vsRounds) {
+    this.vsRounds = vsRounds;
   }
 
   public List<Robot> getRobots() {

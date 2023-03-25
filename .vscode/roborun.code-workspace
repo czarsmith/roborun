@@ -9,6 +9,7 @@
 		"java.import.gradle.home": "/home/czarsmith/gradle-8.0.2",
 		"java.import.gradle.java.home": "/home/czarsmith/jdk-19.0.2",
 		"java.import.gradle.wrapper.enabled": false,
-		"java.debug.settings.onBuildFailureProceed": true
+		"java.debug.settings.onBuildFailureProceed": true,
+		"java.debug.settings.showHex": false
 	}
 }
