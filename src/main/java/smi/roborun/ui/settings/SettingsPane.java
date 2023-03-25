@@ -22,9 +22,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
-import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
-import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
@@ -40,8 +38,6 @@ public class SettingsPane extends GridPane {
 
   public SettingsPane(BattleController ctl) {
     this.ctl = ctl;
-    ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
-
     this.setAlignment(Pos.CENTER);
     this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
 
@@ -50,7 +46,6 @@ public class SettingsPane extends GridPane {
     robotGrid = new TableView<>();
     robotGrid.setEditable(true);
     robotGrid.setMaxWidth(Double.MAX_VALUE);
-//    participantGrid.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     TableColumn<Robot, Boolean> selectedCol = UiUtil.tableCol("Selected", cd -> cd.getValue().getSelectedProperty());
     selectedCol.setCellFactory(col -> new CheckBoxTableCell<>());
     robotGrid.getColumns().add(selectedCol);
@@ -58,6 +53,8 @@ public class SettingsPane extends GridPane {
     robotGrid.getColumns().add(UiUtil.<Robot, String>tableCol("Robot", c -> c.getValue().getRobotNameProperty()));
     robotGrid.getColumns().add(UiUtil.<Robot, Long>tableCol("Code Size", c -> c.getValue().getCodeSizeProperty()));
     robotGrid.getItems().addAll(robots);
+    robotGrid.getColumns().get(2).setSortType(TableColumn.SortType.DESCENDING);
+    robotGrid.getSortOrder().add(robotGrid.getColumns().get(2));
     GridPane.setHgrow(robotGrid, Priority.ALWAYS);
     add(robotGrid, 0, 0);
   }
@@ -131,28 +128,5 @@ public class SettingsPane extends GridPane {
   }
 
   private void createVsBattles(Tourney tourney) {
-
-  }
-
-  private void onBattleFinished(BattleEvent e) {
-    System.out.println("move robots to the next round");
-    Tourney tourney = e.getTourney();
-    Round round = e.getRound();
-    Battle battle = e.getBattle();
-    System.out.println("Round " + round.getRoundNumber() + " Battle " + battle.getBattleNumber());
-    battle.getResults().forEach(br -> {
-      System.out.println(br.getTeamLeaderName() + " " + br.getScore());
-    });
-    if (round.getNumBattles() > 1) {
-      battle.getResults().subList(0, battle.getResults().size() / 2).stream()
-        .forEach(br -> System.out.println(br.getTeamLeaderName()));
-      List<Robot> topFinishers = battle.getResults().subList(0, battle.getResults().size() / 2).stream()
-        .map(BattleResults::getTeamLeaderName)
-        .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
-        .collect(Collectors.toList());
-      System.out.println("Top finishers: " + topFinishers);
-      Round nextRound = tourney.getMeleeRounds().get(round.getRoundNumber());
-      nextRound.getBattles().get((battle.getBattleNumber() - 1) / 2).getRobots().addAll(topFinishers);
-    }
   }
 }

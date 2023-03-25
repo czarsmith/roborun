@@ -51,6 +51,10 @@ public class RobocodeConfig {
     windowProps.setProperty("net.sf.robocode.ui.dialog.RobocodeFrame", StringUtils.join(List.of(x, y, width, height),","));
   }
 
+  public void setShowResults(boolean show) {
+    robocodeProps.setProperty("robocode.options.common.showResults", Objects.toString(show));
+  }
+
   public void apply() {
     try (OutputStream os = new FileOutputStream(robocodeFile)) {
       robocodeProps.store(os, null);

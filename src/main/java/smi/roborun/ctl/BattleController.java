@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSlider;
@@ -38,15 +39,14 @@ import smi.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
   private RobocodeEngine engine;
-  private boolean running;
   private JSlider tpsSlider;
   private List<Integer> tpsTicks;
   private Window robocodeWin;
   private File robocodeDir;
   private Stage stage;
   private Tourney tourney;
-  private Round currRound;
-  private Battle currBattle;
+  private Round round;
+  private Battle battle;
 
   public BattleController(Stage stage) {
     this.stage = stage;
@@ -70,50 +70,38 @@ public class BattleController extends BattleAdaptor {
     return Arrays.asList(engine.getLocalRepository());
   }
 
-  public void execute(Tourney tourney) {
+  public void execute(Tourney tourney, Round round, Battle battle) {
     this.tourney = tourney;
-    new Thread(new TourneyThread()).start();
-  }
-
-  private class TourneyThread implements Runnable {
-    public void run() {
-      running = true;
-      // Execute melee battles
-      tourney.getMeleeRounds().forEach(meleeRound ->
-        meleeRound.getBattles().forEach(battle -> executeBattle(meleeRound, battle)));
-      running = false;
-    }  
-  }
-
-  private void executeBattle(Round round, Battle battle) {
-    currRound = round;
-    currBattle = battle;
-
-    System.out.println("START Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
+    this.round = round;
+    this.battle = battle;
 
     Thread battleThread = new Thread(new BattleThread());
     battleThread.start();
 
-    // Find the robocode window
-    if (robocodeWin == null) {
-    robocodeWin = until(() -> Stream.of(Window.getWindows())
-      .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
-      .findAny().orElse(null));
-//    ((JFrame)robocodeWin).setUndecorated(true);
-    
-//    until(() -> findComponents(robocodeWin, c -> c instanceof JMenu)).forEach(c -> ((JMenu)c).setVisible(false));
-    
-    // Find the TPS Slider
-    tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
-    }
-    setTps(currBattle.getTps());
-    
+    prepUi();
+
+    setTps(battle.getTps());
+
     try {
       battleThread.join();
-      System.out.println("DONE Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+  }
+
+  private void prepUi() {
+    if (robocodeWin == null) {
+      // Find the robocode window
+      robocodeWin = until(() -> Stream.of(Window.getWindows())
+        .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
+        .findAny().orElse(null));
+      try {
+        ((JFrame)robocodeWin).setUndecorated(true);
+      } catch (java.awt.IllegalComponentStateException e) {}
+
+      tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
+      until(() -> findComponents(robocodeWin, c -> c instanceof JMenu)).forEach(c -> ((JMenu)c).setVisible(false));
+    }      
   }
 
   public void setTps(int tps) {
@@ -129,17 +117,18 @@ public class BattleController extends BattleAdaptor {
   private class BattleThread implements Runnable {
     public void run() {
       var config = new RobocodeConfig(robocodeDir);
-      config.setTps(currBattle.getTps());
+      config.setTps(battle.getTps());
       config.setVisibleGround(false);
       config.setVisibleScanArcs(false);
-      config.setWindowSize(0, 0, 170 + currBattle.getBattlefieldWidth(), 140 + currBattle.getBattlefieldHeight());
+      config.setWindowSize(0, 0, 170 + battle.getBattlefieldWidth(), 140 + battle.getBattlefieldHeight());
+      config.setShowResults(false);
       config.apply();
 
       BattlefieldSpecification battlefield = new BattlefieldSpecification(
-        currBattle.getBattlefieldWidth(), currBattle.getBattlefieldHeight());
+        battle.getBattlefieldWidth(), battle.getBattlefieldHeight());
       RobotSpecification[] selectedRobots = engine.getLocalRepository(
-        StringUtils.join(currBattle.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()), ","));
-      BattleSpecification battleSpec = new BattleSpecification(currBattle.getNumRounds(), battlefield, selectedRobots);
+        StringUtils.join(battle.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()), ","));
+      BattleSpecification battleSpec = new BattleSpecification(battle.getNumRounds(), battlefield, selectedRobots);
 
       engine.setVisible(true);
       engine.runBattle(battleSpec, true);
@@ -149,7 +138,7 @@ public class BattleController extends BattleAdaptor {
 
   private <T> T until(Supplier<T> supplier) {
     T result = supplier.get();
-    while ((result == null || (result instanceof List && ((List<?>)result).isEmpty())) && running) {
+    while (result == null || (result instanceof List && ((List<?>)result).isEmpty())) {
       try {
         Thread.sleep(200);
         result = supplier.get();
@@ -182,8 +171,8 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
-    currBattle.setResults(Arrays.asList(e.getSortedResults()));
-    stage.fireEvent(BattleEvent.finished(tourney, currRound, currBattle));
+    battle.setResults(Arrays.asList(e.getSortedResults()));
+    stage.fireEvent(BattleEvent.finished(tourney, round, battle));
   }
 
   public void addEventHandler(EventType<BattleEvent> e, EventHandler<BattleEvent> handler) {
