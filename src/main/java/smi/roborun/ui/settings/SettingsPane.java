@@ -68,6 +68,8 @@ public class SettingsPane extends GridPane {
     
     createBattles(tourney);
 
+    applyTiming(tourney);
+
     // Log the entire tournament model
     try {
       ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
@@ -117,6 +119,7 @@ public class SettingsPane extends GridPane {
         battle.setRoundNumber(meleeRound.getRoundNumber());
         battle.setBattleNumber(battleIdx + 1);
         meleeRound.getBattles().add(battle);
+        tourney.setNumBattles(tourney.getNumBattles() + 1);
       });  
     });
 
@@ -128,5 +131,11 @@ public class SettingsPane extends GridPane {
   }
 
   private void createVsBattles(Tourney tourney) {
+  }
+
+  private void applyTiming(Tourney tourney) {
+    long battleMillis = tourney.getDesiredRuntimeMillis() / tourney.getNumBattles();
+    tourney.getMeleeRounds().forEach(round -> round.getBattles().forEach(battle ->
+      battle.setDesiredRuntimeMillis(battleMillis)));
   }
 }

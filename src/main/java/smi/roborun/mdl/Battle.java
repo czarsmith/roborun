@@ -18,12 +18,14 @@ public class Battle {
   private Integer tps;
   private List<Robot> robots;
   private List<BattleResults> results;
+  private Long desiredRuntimeMillis;
 
   public Battle() {
     numRounds = 3;
     battlefieldWidth = 800;
     battlefieldHeight = 800;
     tps = 25;
+    desiredRuntimeMillis = 30000L;
     robots = new ArrayList<>();
     results = new ArrayList<>();
   }
@@ -96,5 +98,12 @@ public class Battle {
   public void setTps(Integer tps) {
     this.tps = tps;
   }
-  
+
+  public Long getDesiredRuntimeMillis() {
+    return desiredRuntimeMillis;
+  }
+
+  public void setDesiredRuntimeMillis(Long desiredRuntimeMillis) {
+    this.desiredRuntimeMillis = desiredRuntimeMillis;
+  }
 }

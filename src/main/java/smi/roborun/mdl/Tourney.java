@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Tourney {
-  private Long maxRuntimeMillis;
+  private Long desiredRuntimeMillis;
   private Integer desiredTps;
   private List<Robot> robots;
   private Integer maxMeleeSize;
@@ -16,27 +16,28 @@ public class Tourney {
   private Integer vsBattlefieldWidth;
   private Integer vsBattlefieldHeight;
   private List<Round> vsRounds;
+  private int numBattles;
 
   public Tourney() {
-    maxRuntimeMillis = 0L;
+    desiredRuntimeMillis = 30000L;
     maxMeleeSize = 4;
     meleeBattlefieldWidth = 800;
     meleeBattlefieldHeight = 800;
     vsBattlefieldWidth = 600;
     vsBattlefieldHeight = 600;
-    desiredTps = 50;
-    numMeleeRoundsPerBattle = 1;
-    numVsRoundsPerBattle = 1;
+    desiredTps = 25;
+    numMeleeRoundsPerBattle = 10;
+    numVsRoundsPerBattle = 10;
     meleeRounds = new ArrayList<>();
     vsRounds = new ArrayList<>();
     robots = new ArrayList<>();
   }
   
-  public Long getMaxRuntimeMillis() {
-    return maxRuntimeMillis;
+  public Long getDesiredRuntimeMillis() {
+    return desiredRuntimeMillis;
   }
-  public void setMaxRuntimeMillis(Long maxRuntimeMillis) {
-    this.maxRuntimeMillis = maxRuntimeMillis;
+  public void setDesiredRuntimeMillis(Long desiredRuntimeMillis) {
+    this.desiredRuntimeMillis = desiredRuntimeMillis;
   }
   public Integer getMaxMeleeSize() {
     return maxMeleeSize;
@@ -113,5 +114,13 @@ public class Tourney {
 
   public void setRobots(List<Robot> robots) {
     this.robots = robots;
+  }
+
+  public int getNumBattles() {
+    return numBattles;
+  }
+
+  public void setNumBattles(int numBattles) {
+    this.numBattles = numBattles;
   }
 }

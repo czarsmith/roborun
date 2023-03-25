@@ -32,6 +32,7 @@ public class Roborun extends Application {
   private Battle battle;
   private BattleController ctl;
   private SettingsPane settingsPane;
+  private long tourneyStartTime;
 
   @Override
   public void start(Stage stage) {
@@ -71,16 +72,18 @@ public class Roborun extends Application {
 
   private void runNextBattle() {
     if (this.battle == null) { // First battle
-      this.tourney = settingsPane.createTourney();
-      this.round = tourney.getMeleeRounds().get(0);
-      this.battle = round.getBattles().get(0);  
+      tourneyStartTime = System.currentTimeMillis();
+      tourney = settingsPane.createTourney();
+      round = tourney.getMeleeRounds().get(0);
+      battle = round.getBattles().get(0);  
     } else if (round.getNumBattles() > battle.getBattleNumber()) { // Same Round, Next Battle
       battle = round.getBattles().get(battle.getBattleNumber());
     } else if (tourney.getMeleeRounds().size() > round.getRoundNumber()) { // Next Round, Next Battle
       round = tourney.getMeleeRounds().get(round.getRoundNumber());
       battle = round.getBattles().get(0);
     } else {
-      System.out.println("Tournamet finished");
+      double seconds = (System.currentTimeMillis() - tourneyStartTime) / 1000d;
+      System.out.println("Tournament finished in " + seconds + " seconds");
       battle = null;
     }
 

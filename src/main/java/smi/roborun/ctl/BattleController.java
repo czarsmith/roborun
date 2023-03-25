@@ -9,16 +9,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JSlider;
+import javax.swing.JToolBar;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -31,6 +38,7 @@ import robocode.control.RobocodeEngine;
 import robocode.control.RobotSpecification;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
+import robocode.control.events.RoundStartedEvent;
 import smi.roborun.RobocodeConfig;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
@@ -47,9 +55,13 @@ public class BattleController extends BattleAdaptor {
   private Tourney tourney;
   private Round round;
   private Battle battle;
+  private ScheduledExecutorService ses;
+  private ScheduledFuture<?> tpsNext;
+  private ScheduledFuture<?> tpsMax;
 
   public BattleController(Stage stage) {
     this.stage = stage;
+    ses = Executors.newSingleThreadScheduledExecutor();
 
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
     // in order to determine which slider tick corresponds to each TPS value.
@@ -82,6 +94,9 @@ public class BattleController extends BattleAdaptor {
 
     setTps(battle.getTps());
 
+    tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), battle.getDesiredRuntimeMillis() * 2 / 3, TimeUnit.MILLISECONDS);
+    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), battle.getDesiredRuntimeMillis() * 5 / 6, TimeUnit.MILLISECONDS);
+
     try {
       battleThread.join();
     } catch (InterruptedException e) {
@@ -94,18 +109,20 @@ public class BattleController extends BattleAdaptor {
       // Find the robocode window
       robocodeWin = until(() -> Stream.of(Window.getWindows())
         .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
-        .findAny().orElse(null));
+        .findAny().orElse(null), 10);
       try {
         ((JFrame)robocodeWin).setUndecorated(true);
       } catch (java.awt.IllegalComponentStateException e) {}
 
       tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
-      until(() -> findComponents(robocodeWin, c -> c instanceof JMenu)).forEach(c -> ((JMenu)c).setVisible(false));
-    }      
+      until(() -> findComponents(robocodeWin, c -> c instanceof JToolBar)).forEach(c -> ((JToolBar)c).setVisible(false));
+      until(() -> findComponents(robocodeWin, c -> c instanceof JMenuBar)).forEach(c -> ((JMenuBar)c).setVisible(false));
+      until(() -> (JButton)findComponent(robocodeWin, c -> c instanceof JButton
+        && "Main battle log".equals(((JButton)c).getText()))).getParent().setVisible(false);
+    }
   }
 
   public void setTps(int tps) {
-    System.out.println("Set TPS to " + tps);
     for (int i = 0; i < tpsTicks.size(); i++) {
       if (tps <= tpsTicks.get(i)) {
         tpsSlider.setValue(i);
@@ -120,7 +137,7 @@ public class BattleController extends BattleAdaptor {
       config.setTps(battle.getTps());
       config.setVisibleGround(false);
       config.setVisibleScanArcs(false);
-      config.setWindowSize(0, 0, 170 + battle.getBattlefieldWidth(), 140 + battle.getBattlefieldHeight());
+      config.setWindowSize(0, 0, 40 + battle.getBattlefieldWidth(), 40 + battle.getBattlefieldHeight());
       config.setShowResults(false);
       config.apply();
 
@@ -137,10 +154,14 @@ public class BattleController extends BattleAdaptor {
   }
 
   private <T> T until(Supplier<T> supplier) {
+    return until(supplier, 200);
+  }
+
+  private <T> T until(Supplier<T> supplier, long interval) {
     T result = supplier.get();
     while (result == null || (result instanceof List && ((List<?>)result).isEmpty())) {
       try {
-        Thread.sleep(200);
+        Thread.sleep(interval);
         result = supplier.get();
       } catch (Exception e) {}
     }
@@ -171,8 +192,15 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
+    tpsNext.cancel(true);
+    tpsMax.cancel(true);
     battle.setResults(Arrays.asList(e.getSortedResults()));
     stage.fireEvent(BattleEvent.finished(tourney, round, battle));
+  }
+
+  @Override
+  public void onRoundStarted(RoundStartedEvent e) {
+    System.out.println("Round: " + e.getRound());
   }
 
   public void addEventHandler(EventType<BattleEvent> e, EventHandler<BattleEvent> handler) {
