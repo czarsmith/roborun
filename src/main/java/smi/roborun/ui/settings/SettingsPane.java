@@ -15,13 +15,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.scene.paint.Color;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
@@ -31,15 +26,11 @@ import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
 
 public class SettingsPane extends GridPane {
-  private BattleController ctl;
-
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
 
   public SettingsPane(BattleController ctl) {
-    this.ctl = ctl;
     this.setAlignment(Pos.CENTER);
-    this.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
 
     robots = FXCollections.observableArrayList(ctl.getRobots().stream().map(Robot::new).collect(Collectors.toList()));
 
