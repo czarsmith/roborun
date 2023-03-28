@@ -30,6 +30,10 @@ public class Robot {
     meleeSeed = new SimpleObjectProperty<>(0);
   }
 
+  public RobotSpecification getSpec() {
+    return spec;
+  }
+  
   @JsonIgnore
   public BooleanProperty getSelectedProperty() {
     return selected;

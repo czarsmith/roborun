@@ -3,17 +3,22 @@ package smi.roborun.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
@@ -28,23 +33,34 @@ public class BattleBoard extends GridPane {
   private Round round;
   private Battle battle;
   private long tourneyStartTime;
+  private FlowPane nowPlayingCards;
 
   public BattleBoard(BattleController ctl) {
     this.ctl = ctl;
     ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
 
-    Pane nowPlaying = new Pane(new Label("Now Playing"));
-    nowPlaying.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
+    nowPlayingCards = new FlowPane();
 
-    add(new Label("On Deck"), 0, 0);
+    Label nowPlayingTitle = new Label("Now Playing");
+    nowPlayingTitle.setFont(new Font("Arial", 24));
+//    nowPlayingTitle.setAlignment(Pos.CENTER);
+
+    GridPane nowPlaying = new GridPane();
+    nowPlaying.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
+    nowPlaying.add(nowPlayingTitle, 0, 0);
+    nowPlaying.add(nowPlayingCards, 0, 1);
+    ColumnConstraints cc1 = new ColumnConstraints();
+    cc1.setHalignment(HPos.CENTER);
+    nowPlaying.getColumnConstraints().add(cc1);
+
+    add(new Pane(new Label("On Deck")), 0, 0);
     add(nowPlaying, 1, 0);
-    add(new Label("Completed"), 2, 0);
-    add(new Label("Ticker"), 0, 1, 3, 1);
+    add(new Pane(new Label("Completed")), 2, 0);
+    add(new Pane(new Label("Ticker")), 0, 1, 3, 1);
 
     ColumnConstraints col1 = new ColumnConstraints();
     col1.setHgrow(Priority.ALWAYS);
     ColumnConstraints col2 = new ColumnConstraints(800);
-    col2.setPrefWidth(800);
     ColumnConstraints col3 = new ColumnConstraints();
     col3.setHgrow(Priority.ALWAYS);
     getColumnConstraints().addAll(col1, col2, col3);
@@ -78,6 +94,12 @@ public class BattleBoard extends GridPane {
     }
 
     if (battle != null) {
+      nowPlayingCards.getChildren().clear();
+      battle.getRobots().stream().map(RobotCard::new).forEach(card -> {
+        FlowPane.setMargin(card, new Insets(4));
+        nowPlayingCards.getChildren().add(card);
+      });
+
       new Thread(new TourneyThread()).start();
     }
   }
