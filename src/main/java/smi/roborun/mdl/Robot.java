@@ -1,5 +1,7 @@
 package smi.roborun.mdl;
 
+import java.io.File;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,13 +12,14 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import net.sf.robocode.repository.CodeSizeCalculator;
 import robocode.control.RobotSpecification;
 
 public class Robot {
   private BooleanProperty selected;
   private StringProperty author;
   private StringProperty robotName;
-  private ObjectProperty<Long> codeSize;
+  private ObjectProperty<Integer> codeSize;
   private ObjectProperty<Integer> meleeSeed;
   
   private RobotSpecification spec;
@@ -26,8 +29,21 @@ public class Robot {
     selected = new SimpleBooleanProperty();
     author = new SimpleStringProperty(StringUtils.defaultIfBlank(spec.getAuthorName(), "Unknown"));
     robotName = new SimpleStringProperty(spec.getName());
-    codeSize = new SimpleObjectProperty<>(0L);
+    codeSize = new SimpleObjectProperty<>(0);
     meleeSeed = new SimpleObjectProperty<>(0);
+
+    try {
+      // Weird Robocode stuff apparently
+      String path = spec.getJarFile().getPath();
+      path = path.substring(path.lastIndexOf(":") + 1);
+      path = path.replace("!", "");
+      File file = new File(path);
+      if (file.isFile()) {
+        codeSize.set(CodeSizeCalculator.getJarFileCodeSize(file));
+      }
+    } catch (Exception e) {
+      System.out.println("Unknown robot path: " + spec.getJarFile());
+    }
   }
 
   public RobotSpecification getSpec() {
@@ -66,8 +82,12 @@ public class Robot {
   }
   
   @JsonIgnore
-  public ObjectProperty<Long> getCodeSizeProperty() {
+  public ObjectProperty<Integer> getCodeSizeProperty() {
     return codeSize;
+  }
+
+  public Integer getCodeSize() {
+    return codeSize.get();
   }
 
   @JsonIgnore

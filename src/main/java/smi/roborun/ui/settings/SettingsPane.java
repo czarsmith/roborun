@@ -42,7 +42,7 @@ public class SettingsPane extends GridPane {
     robotGrid.getColumns().add(selectedCol);
     robotGrid.getColumns().add(UiUtil.<Robot, String>tableCol("Author", c -> c.getValue().getAuthorProperty()));
     robotGrid.getColumns().add(UiUtil.<Robot, String>tableCol("Robot", c -> c.getValue().getRobotNameProperty()));
-    robotGrid.getColumns().add(UiUtil.<Robot, Long>tableCol("Code Size", c -> c.getValue().getCodeSizeProperty()));
+    robotGrid.getColumns().add(UiUtil.<Robot, Integer>tableCol("Code Size", c -> c.getValue().getCodeSizeProperty()));
     robotGrid.getItems().addAll(robots);
     robotGrid.getColumns().get(2).setSortType(TableColumn.SortType.DESCENDING);
     robotGrid.getSortOrder().add(robotGrid.getColumns().get(2));
