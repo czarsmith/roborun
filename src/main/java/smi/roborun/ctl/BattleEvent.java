@@ -8,6 +8,7 @@ import smi.roborun.mdl.Tourney;
 
 public class BattleEvent extends Event {
   public static final EventType<BattleEvent> STARTED = new EventType<>(ANY, "STARTED");
+  public static final EventType<BattleEvent> TURN_FINISHED = new EventType<>(ANY, "TURN_FINISHED");
   public static final EventType<BattleEvent> FINISHED = new EventType<>(ANY, "FINISHED");
   
   private Tourney tourney;
@@ -27,6 +28,10 @@ public class BattleEvent extends Event {
 
   public static BattleEvent finished(Tourney tourney, Round round, Battle battle) {
     return new BattleEvent(FINISHED, tourney, round, battle);
+  }
+
+  public static BattleEvent turnFinished(Tourney tourney, Round round, Battle battle) {
+    return new BattleEvent(TURN_FINISHED, tourney, round, battle);
   }
 
   public Tourney getTourney() {

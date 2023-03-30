@@ -29,6 +29,7 @@ import javax.swing.JToolBar;
 
 import org.apache.commons.lang3.StringUtils;
 
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.stage.Stage;
@@ -39,6 +40,7 @@ import robocode.control.RobotSpecification;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
 import robocode.control.events.RoundStartedEvent;
+import robocode.control.events.TurnEndedEvent;
 import smi.roborun.RobocodeConfig;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
@@ -201,6 +203,16 @@ public class BattleController extends BattleAdaptor {
   @Override
   public void onRoundStarted(RoundStartedEvent e) {
     System.out.println("Round: " + e.getRound());
+  }
+
+  @Override
+  public void onTurnEnded(TurnEndedEvent e) {
+    Platform.runLater(() -> {
+      Arrays.stream(e.getTurnSnapshot().getRobots()).forEach(r ->
+        tourney.getRobot(r.getName()).getBattleScore().setScore(
+          r.getScoreSnapshot().getTotalScore() + r.getScoreSnapshot().getCurrentScore()));
+      stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
+    });
   }
 
   public void addEventHandler(EventType<BattleEvent> e, EventHandler<BattleEvent> handler) {

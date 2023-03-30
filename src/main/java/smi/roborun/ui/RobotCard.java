@@ -1,5 +1,7 @@
 package smi.roborun.ui;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
@@ -13,7 +15,8 @@ import smi.roborun.mdl.Robot;
 
 public class RobotCard extends VBox {
   private Robot robot;
-  
+  private Label battleScoreLabel;
+
   public RobotCard(Robot robot) {
     this.robot = robot;
 
@@ -27,8 +30,20 @@ public class RobotCard extends VBox {
     Label packageName = new Label("(" + getPackageName() + ")");
     packageName.setFont(new Font("Arial", 10));
     getChildren().add(packageName);
+
+    DoubleProperty dp = robot.getBattleScore().getScoreProperty();
+
+    battleScoreLabel = new Label();
+    battleScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
+      "Battle Score: " + (int)dp.get(), dp));
+    packageName.setFont(new Font("Arial", 14));
+    getChildren().add(battleScoreLabel);
   }
 
+  public Robot getRobot() {
+    return robot;
+  }
+  
   private String getDisplayName() {
     String displayName = robot.getSpec().getClassName();
     displayName = displayName.substring(displayName.lastIndexOf(".") + 1);

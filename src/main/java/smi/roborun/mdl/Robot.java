@@ -21,7 +21,9 @@ public class Robot {
   private StringProperty robotName;
   private ObjectProperty<Integer> codeSize;
   private ObjectProperty<Integer> meleeSeed;
-  
+  private ObjectProperty<RobotScore> overallScore;
+  private ObjectProperty<RobotScore> battleScore;
+
   private RobotSpecification spec;
 
   public Robot(RobotSpecification spec) {
@@ -31,6 +33,8 @@ public class Robot {
     robotName = new SimpleStringProperty(spec.getName());
     codeSize = new SimpleObjectProperty<>(0);
     meleeSeed = new SimpleObjectProperty<>(0);
+    overallScore = new SimpleObjectProperty<>(new RobotScore());
+    battleScore = new SimpleObjectProperty<>(new RobotScore());
 
     try {
       // Weird Robocode stuff apparently
@@ -101,5 +105,21 @@ public class Robot {
 
   public void setMeleeSeed(Integer meleeSeed) {
     this.meleeSeed.set(meleeSeed);
+  }
+
+  public ObjectProperty<RobotScore> getOverallScoreProperty() {
+    return overallScore;
+  }
+
+  public RobotScore getOverallScore() {
+    return overallScore.get();
+  }
+
+  public ObjectProperty<RobotScore> getBattleScoreProperty() {
+    return battleScore;
+  }
+
+  public RobotScore getBattleScore() {
+    return battleScore.get();
   }
 }

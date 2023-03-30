@@ -1,12 +1,18 @@
 package smi.roborun.mdl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Tourney {
   private Long desiredRuntimeMillis;
   private Integer desiredTps;
-  private List<Robot> robots;
+  private Map<String, Robot> robots;
   private Integer maxMeleeSize;
   private Integer numMeleeRoundsPerBattle;
   private Integer meleeBattlefieldWidth;
@@ -30,7 +36,7 @@ public class Tourney {
     numVsRoundsPerBattle = 10;
     meleeRounds = new ArrayList<>();
     vsRounds = new ArrayList<>();
-    robots = new ArrayList<>();
+    robots = new HashMap<>();
   }
   
   public Long getDesiredRuntimeMillis() {
@@ -108,12 +114,17 @@ public class Tourney {
     this.vsRounds = vsRounds;
   }
 
-  public List<Robot> getRobots() {
-    return robots;
+  @JsonIgnore
+  public Robot getRobot(String name) {
+    return robots.get(name);
+  }
+
+  public Collection<Robot> getRobots() {
+    return robots.values();
   }
 
   public void setRobots(List<Robot> robots) {
-    this.robots = robots;
+    this.robots = robots.stream().collect(Collectors.toMap(Robot::getRobotName, r -> r));
   }
 
   public int getNumBattles() {

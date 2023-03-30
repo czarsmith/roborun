@@ -1,11 +1,11 @@
 package smi.roborun.ui;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
@@ -38,25 +38,53 @@ public class BattleBoard extends GridPane {
   public BattleBoard(BattleController ctl) {
     this.ctl = ctl;
     ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
+    ctl.addEventHandler(BattleEvent.TURN_FINISHED, this::onTurnFinished);
 
-    nowPlayingCards = new FlowPane();
+    Label upNextTitle = new Label("Up Next");
+    upNextTitle.setFont(new Font("Arial", 24));
+
+    FlowPane upNextCards = new FlowPane();
+    upNextCards.setBorder(new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
+
+    FlowPane upNextBracket = new FlowPane();
+    upNextBracket.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
+
+    GridPane upNext = new GridPane();
+    upNext.add(upNextTitle, 0, 0);
+    upNext.add(upNextCards, 0, 1);
+    upNext.add(upNextBracket, 0, 2);
+    
+    Pane centerPane = new Pane();
+    centerPane.setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
 
     Label nowPlayingTitle = new Label("Now Playing");
     nowPlayingTitle.setFont(new Font("Arial", 24));
-//    nowPlayingTitle.setAlignment(Pos.CENTER);
+
+    nowPlayingCards = new FlowPane();
+    nowPlayingCards.setBorder(new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
+
+    FlowPane nowPlayingBracket = new FlowPane();
+    nowPlayingBracket.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
 
     GridPane nowPlaying = new GridPane();
-    nowPlaying.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THICK)));
     nowPlaying.add(nowPlayingTitle, 0, 0);
     nowPlaying.add(nowPlayingCards, 0, 1);
+    nowPlaying.add(nowPlayingBracket, 0, 2);
     ColumnConstraints cc1 = new ColumnConstraints();
     cc1.setHalignment(HPos.CENTER);
     nowPlaying.getColumnConstraints().add(cc1);
+    RowConstraints row1 = new RowConstraints();
+    RowConstraints row2 = new RowConstraints();
+    row2.setVgrow(Priority.ALWAYS);
+    row2.setPercentHeight(50);
+    RowConstraints row3 = new RowConstraints();
+    row3.setVgrow(Priority.ALWAYS);
+    row3.setPercentHeight(50);
+    nowPlaying.getRowConstraints().addAll(row1, row2, row3);
 
-    add(new Pane(new Label("On Deck")), 0, 0);
-    add(nowPlaying, 1, 0);
-    add(new Pane(new Label("Completed")), 2, 0);
-    add(new Pane(new Label("Ticker")), 0, 1, 3, 1);
+    add(upNext, 0, 0);
+    add(centerPane, 1, 0);
+    add(nowPlaying, 2, 0);
 
     ColumnConstraints col1 = new ColumnConstraints();
     col1.setHgrow(Priority.ALWAYS);
@@ -65,11 +93,9 @@ public class BattleBoard extends GridPane {
     col3.setHgrow(Priority.ALWAYS);
     getColumnConstraints().addAll(col1, col2, col3);
 
-    RowConstraints row1 = new RowConstraints();
-    row1.setVgrow(Priority.ALWAYS);
-    RowConstraints row2 = new RowConstraints();
-    row2.setPrefHeight(100);
-    getRowConstraints().addAll(row1, row2);
+    RowConstraints r1 = new RowConstraints();
+    r1.setPercentHeight(100);
+    getRowConstraints().add(r1);
   }
 
   public void startTourney(Tourney tourney) {
@@ -127,5 +153,13 @@ public class BattleBoard extends GridPane {
       nextRound.getBattles().get((battle.getBattleNumber() - 1) / 2).getRobots().addAll(topFinishers);
     }
     runNextBattle();
+  }
+
+  private void onTurnFinished(BattleEvent e) {
+    nowPlayingCards.getChildren().stream()
+      .sorted(
+        Comparator.comparing(card -> ((RobotCard)card).getRobot().getBattleScore().getScore())
+          .thenComparing(card -> ((RobotCard)card).getRobot().getRobotName()))
+      .forEach(n -> n.toBack());
   }
 }
