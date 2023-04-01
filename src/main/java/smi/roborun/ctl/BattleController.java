@@ -10,10 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -63,15 +59,17 @@ public class BattleController extends BattleAdaptor {
   private Tourney tourney;
   private Round round;
   private Battle battle;
-  private ScheduledExecutorService ses;
-  private ScheduledFuture<?> tpsNext;
-  private ScheduledFuture<?> tpsMax;
+//  private ScheduledExecutorService ses;
+//  private ScheduledFuture<?> tpsNext;
+//  private ScheduledFuture<?> tpsMax;
   private long nextEventTimeMillis = 0;
   private long eventRateMillis = 500;
+  private boolean doubleSpeed;
+  private boolean maxSpeed;
 
   public BattleController(Stage stage) {
     this.stage = stage;
-    ses = Executors.newSingleThreadScheduledExecutor();
+//    ses = Executors.newSingleThreadScheduledExecutor();
 
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
     // in order to determine which slider tick corresponds to each TPS value.
@@ -104,8 +102,8 @@ public class BattleController extends BattleAdaptor {
 
     setTps(battle.getTps());
 
-    tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), battle.getDesiredRuntimeMillis() * 1 / 3, TimeUnit.MILLISECONDS);
-    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), battle.getDesiredRuntimeMillis() * 2 / 3, TimeUnit.MILLISECONDS);
+//    tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), battle.getDesiredRuntimeMillis() * 1 / 3, TimeUnit.MILLISECONDS);
+//    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), battle.getDesiredRuntimeMillis() * 2 / 3, TimeUnit.MILLISECONDS);
 
     try {
       battleThread.join();
@@ -202,13 +200,16 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onBattleStarted(BattleStartedEvent e) {
+    doubleSpeed = false;
+    maxSpeed = false;
+    battle.setStartTime(System.currentTimeMillis());
     Platform.runLater(() -> tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset));
   }
 
   @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
-    tpsNext.cancel(true);
-    tpsMax.cancel(true);
+//    tpsNext.cancel(true);
+//    tpsMax.cancel(true);
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
       battle.setResults(Arrays.asList(e.getSortedResults()));
@@ -238,6 +239,15 @@ public class BattleController extends BattleAdaptor {
         updateScores(scores);
         stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
       });
+    }
+
+    // Adjust the battle speed to achive desired runtime
+    if (!doubleSpeed && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() / 3)) {
+      setTps(battle.getTps() * 2);
+      doubleSpeed = true;
+    } else if (!maxSpeed && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() * 2 / 3)) {
+      setTps(Integer.MAX_VALUE);
+      maxSpeed = true;
     }
   }
 

@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import robocode.BattleResults;
 
@@ -35,6 +36,9 @@ public class Battle {
   /** The robocode battle round, not the tournament round. */
   private IntegerProperty battleRound;
 
+  /** This can't be observable because it's not updated on the UI event thread */
+  private long startTime;
+
   public Battle() {
     numRounds = 3;
     battlefieldWidth = 800;
@@ -45,6 +49,14 @@ public class Battle {
     robots = new ArrayList<>();
     results = new ArrayList<>();
     battleRound = new SimpleIntegerProperty();
+    reset();
+  }
+
+  public void reset() {
+    numRobots.unbind();
+    results.clear();
+    battleRound.set(0);
+    startTime = 0;
   }
 
   public Long getId() {
@@ -147,5 +159,13 @@ public class Battle {
 
   public void setBattleRound(Integer battleRound) {
     this.battleRound.set(battleRound);
+  }
+
+  public long getStartTime() {
+    return startTime;
+  }
+
+  public void setStartTime(long startTime) {
+    this.startTime = startTime;
   }
 }
