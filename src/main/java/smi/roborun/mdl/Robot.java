@@ -5,8 +5,12 @@ import java.io.File;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -15,7 +19,12 @@ import javafx.beans.property.StringProperty;
 import net.sf.robocode.repository.CodeSizeCalculator;
 import robocode.control.RobotSpecification;
 
+@JsonInclude(Include.NON_NULL)
 public class Robot {
+  private StringProperty shortName;
+  private StringProperty packageName;
+  private StringProperty shortNameAndRank; // overall rank
+  private StringProperty shortNameAndBattleRank;
   private BooleanProperty selected;
   private StringProperty author;
   private StringProperty robotName;
@@ -28,14 +37,27 @@ public class Robot {
 
   public Robot(RobotSpecification spec) {
     this.spec = spec;
+    shortName = new SimpleStringProperty(spec.getClassName().substring(spec.getClassName().lastIndexOf(".") + 1));
+    packageName = new SimpleStringProperty(spec.getClassName().substring(0, spec.getClassName().lastIndexOf(".")));
+    shortNameAndRank = new SimpleStringProperty("- " + shortName.get());
+    shortNameAndBattleRank = new SimpleStringProperty("- " + shortName.get());
     selected = new SimpleBooleanProperty();
     author = new SimpleStringProperty(StringUtils.defaultIfBlank(spec.getAuthorName(), "Unknown"));
-    robotName = new SimpleStringProperty(spec.getName());
+    robotName = new SimpleStringProperty(spec.getNameAndVersion());
     codeSize = new SimpleObjectProperty<>(0);
     meleeSeed = new SimpleObjectProperty<>(0);
     overallScore = new SimpleObjectProperty<>(new RobotScore());
     battleScore = new SimpleObjectProperty<>(new RobotScore());
 
+    IntegerProperty orp = overallScore.get().getRankProperty();
+    shortNameAndRank.bind(Bindings.createStringBinding(() ->
+      (orp.get() == 0 ? "-" : orp.get()) + " " + shortName.get(), orp));
+
+    IntegerProperty brp = battleScore.get().getRankProperty();
+    shortNameAndBattleRank.bind(Bindings.createStringBinding(() ->
+      (brp.get() == 0 ? "-" : brp.get()) + " " + shortName.get(), brp));
+  
+    // Calculate code size
     try {
       // Weird Robocode stuff apparently
       String path = spec.getJarFile().getPath();
@@ -50,6 +72,58 @@ public class Robot {
     }
   }
 
+  @JsonIgnore
+  public StringProperty getShortNameProperty() {
+    return shortName;
+  }
+
+  public String getShortName() {
+    return shortName.get();
+  }
+
+  public void setShortName(String shortName) {
+    this.shortName.set(shortName);
+  }
+
+  @JsonIgnore
+  public StringProperty getPackageNameProperty() {
+    return packageName;
+  }
+
+  public String getPackageName() {
+    return packageName.get();
+  }
+
+  public void setPackageName(String packageName) {
+    this.packageName.set(packageName);
+  }
+  
+  @JsonIgnore
+  public StringProperty getShortNameAndRankProperty() {
+    return shortNameAndRank;
+  }
+
+  public String getShortNameAndRank() {
+    return shortNameAndRank.get();
+  }
+
+  public void setShortNameAndRank(String shortNameAndRank) {
+    this.shortNameAndRank.set(shortNameAndRank);
+  }
+  
+  @JsonIgnore
+  public StringProperty getShortNameAndBattleRankProperty() {
+    return shortNameAndBattleRank;
+  }
+
+  public String getShortNameAndBattleRank() {
+    return shortNameAndBattleRank.get();
+  }
+
+  public void setShortNameAndBattleRank(String shortNameAndBattleRank) {
+    this.shortNameAndBattleRank.set(shortNameAndBattleRank);
+  }
+  
   public RobotSpecification getSpec() {
     return spec;
   }

@@ -14,6 +14,12 @@ public class RobotScore {
   public RobotScore() {
     rank = new SimpleIntegerProperty(0);
     score = new SimpleDoubleProperty(0d);
+    reset();
+  }
+
+  public void reset() {
+    setRank(0);
+    setScore(0);
   }
 
   @JsonIgnore

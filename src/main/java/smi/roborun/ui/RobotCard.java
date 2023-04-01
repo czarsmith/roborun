@@ -2,19 +2,18 @@ package smi.roborun.ui;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import smi.roborun.mdl.Robot;
 
-public class RobotCard extends VBox {
+public class RobotCard extends GridPane {
   private Robot robot;
 
   public RobotCard(Robot robot) {
@@ -23,43 +22,44 @@ public class RobotCard extends VBox {
     setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
     setPadding(new Insets(8));
 
-    String robotDisplayName = getDisplayName();
-    IntegerProperty battleRankProperty = robot.getBattleScore().getRankProperty();
+    //IntegerProperty battleRankProperty = robot.getBattleScore().getRankProperty();
+    //Bindings.createStringBinding(() ->
+    //  getRankDisplay((int)battleRankProperty.get()) + " " + robotDisplayName, battleRankProperty));
     Label displayNameLabel = new Label();
     displayNameLabel.setFont(new Font("Arial", 18));
-    displayNameLabel.textProperty().bind(Bindings.createStringBinding(() ->
-      getRankDisplay((int)battleRankProperty.get()) + " " + robotDisplayName, battleRankProperty));
-    getChildren().add(displayNameLabel);
+    displayNameLabel.textProperty().bind(robot.getShortNameAndRankProperty());
+    GridPane.setColumnSpan(displayNameLabel, 2);
+    add(displayNameLabel, 0, 0);
 
-    Label packageName = new Label("(" + getPackageName() + ")");
+    Label packageName = new Label("(" + robot.getPackageName() + ")");
     packageName.setFont(new Font("Arial", 10));
-    getChildren().add(packageName);
+    GridPane.setColumnSpan(packageName, 2);
+    add(packageName, 0, 1);
 
-    DoubleProperty battleScoreProperty = robot.getBattleScore().getScoreProperty();
+    DoubleProperty osp = robot.getOverallScore().getScoreProperty();
+    Label overallScoreLabel = new Label();
+    overallScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
+      Integer.toString((int)osp.get()), osp));
+    overallScoreLabel.setFont(new Font("Arial", 14));
+    add(fieldNameLabel("Overall Score: "), 0, 2);
+    add(overallScoreLabel, 1, 2);
+
+    DoubleProperty bsp = robot.getBattleScore().getScoreProperty();
     Label battleScoreLabel = new Label();
     battleScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
-      "Battle Rank: " + (int)battleScoreProperty.get(), battleScoreProperty));
-    packageName.setFont(new Font("Arial", 14));
-    getChildren().add(battleScoreLabel);
+      Integer.toString((int)bsp.get()), bsp));
+    battleScoreLabel.setFont(new Font("Arial", 14));
+    add(fieldNameLabel("Battle Score: "), 0, 3);
+    add(battleScoreLabel, 1, 3);
+  }
+
+  private Label fieldNameLabel(String text) {
+    Label label = new Label(text);
+    label.setFont(Font.font("Aria", 14));
+    return label;
   }
 
   public Robot getRobot() {
     return robot;
-  }
-  
-  private String getDisplayName() {
-    String displayName = robot.getSpec().getClassName();
-    displayName = displayName.substring(displayName.lastIndexOf(".") + 1);
-    return displayName;
-  }
-
-  private String getPackageName() {
-    String packageName = robot.getSpec().getClassName();
-    packageName = packageName.substring(0, packageName.lastIndexOf("."));
-    return packageName;
-  }
-
-  private String getRankDisplay(Integer rank) {
-    return rank == 0 ? "-" : rank.toString();
   }
 }

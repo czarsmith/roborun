@@ -12,8 +12,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -28,6 +30,7 @@ import smi.roborun.ui.widgets.UiUtil;
 public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
+  private TextField maxMeleeSizeField;
   private Tourney tourney;
 
   public SettingsPane(BattleController ctl, Tourney tourney) {
@@ -51,12 +54,20 @@ public class SettingsPane extends GridPane {
     GridPane.setHgrow(robotGrid, Priority.ALWAYS);
     add(robotGrid, 0, 0);
 
+    GridPane form = new GridPane();
+    maxMeleeSizeField = new TextField(Integer.toString(tourney.getMaxMeleeSize()));
+    maxMeleeSizeField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Max Melee Size: "), 0, 0);
+    form.add(maxMeleeSizeField, 1, 0);
+    add(form, 0, 1);
+
     robots.forEach(r -> r.getSelectedProperty().addListener(b -> this.createTourney()));
   }
 
   public void createTourney() {
     tourney.reset();
     tourney.setRobots(robots.filtered(Robot::getSelected));
+    tourney.setMaxMeleeSize(Integer.parseInt(maxMeleeSizeField.getText()));
 
     if (tourney.getRobots().size() < 2) {
       return;

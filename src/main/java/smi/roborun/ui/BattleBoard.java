@@ -30,6 +30,7 @@ import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.RobotScore;
 import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.SvgButton;
@@ -137,6 +138,8 @@ public class BattleBoard extends GridPane implements TitledNode {
     if (tourney.hasBattles()) {
       tourney.setRound(tourney.getMeleeRounds().get(0));
       tourney.setBattle(tourney.getRound().getBattles().get(0));
+      tourney.getRobots().stream().map(Robot::getOverallScore).forEach(RobotScore::reset);
+      tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset);
     }
   }
 

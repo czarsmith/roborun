@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -39,6 +40,7 @@ import robocode.control.RobocodeEngine;
 import robocode.control.RobotSpecification;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
+import robocode.control.events.BattleStartedEvent;
 import robocode.control.events.RoundStartedEvent;
 import robocode.control.events.TurnEndedEvent;
 import robocode.control.snapshot.IScoreSnapshot;
@@ -195,6 +197,11 @@ public class BattleController extends BattleAdaptor {
   }
 
   @Override
+  public void onBattleStarted(BattleStartedEvent e) {
+    Platform.runLater(() -> tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset));
+  }
+
+  @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
     tpsNext.cancel(true);
     tpsMax.cancel(true);
@@ -214,9 +221,24 @@ public class BattleController extends BattleAdaptor {
     Platform.runLater(() -> {
       IScoreSnapshot[] scores = e.getTurnSnapshot().getSortedTeamScores();
       for (int i = 0; i < scores.length; i++) {
+        Robot r = tourney.getRobot(scores[i].getName());
+        if (r == null) {
+          System.out.println(scores[i].getName());
+        }
+
         RobotScore score = tourney.getRobot(scores[i].getName()).getBattleScore();
+        double previousScore = score.getScore();
         score.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
         score.setRank(score.getScore() == 0 ? 0 : i + 1);
+
+        RobotScore overallScore = tourney.getRobot(scores[i].getName()).getOverallScore();
+        overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
+      }
+
+      List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getOverallScore)
+        .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
+      for (int i = 0; i < sorted.size(); i++) {
+        sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);
       }
       stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
     });
