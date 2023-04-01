@@ -1,4 +1,4 @@
-package smi.roborun.ui.settings;
+package smi.roborun.ui;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,8 +28,10 @@ import smi.roborun.ui.widgets.UiUtil;
 public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
+  private Tourney tourney;
 
-  public SettingsPane(BattleController ctl) {
+  public SettingsPane(BattleController ctl, Tourney tourney) {
+    this.tourney = tourney;
     this.setAlignment(Pos.CENTER);
 
     robots = FXCollections.observableArrayList(ctl.getRobots().stream().map(Robot::new).collect(Collectors.toList()));
@@ -48,18 +50,24 @@ public class SettingsPane extends GridPane {
     robotGrid.getSortOrder().add(robotGrid.getColumns().get(2));
     GridPane.setHgrow(robotGrid, Priority.ALWAYS);
     add(robotGrid, 0, 0);
+
+    robots.forEach(r -> r.getSelectedProperty().addListener(b -> this.createTourney()));
   }
 
-  public Tourney createTourney() {
-    Tourney tourney = new Tourney();
+  public void createTourney() {
+    tourney.reset();
     tourney.setRobots(robots.filtered(Robot::getSelected));
+
     if (tourney.getRobots().size() < 2) {
-      UiUtil.error("You must select at least two robots.");
+      return;
     }
-    
+
     createBattles(tourney);
 
     applyTiming(tourney);
+
+    tourney.setRound(tourney.getMeleeRounds().get(0));
+    tourney.setBattle(tourney.getRound().getBattles().get(0));
 
     // Log the entire tournament model
     try {
@@ -68,8 +76,6 @@ public class SettingsPane extends GridPane {
     } catch (Exception e) {
       e.printStackTrace();
     }
-
-    return tourney;
   }
 
   private void createBattles(Tourney tourney) {
@@ -119,6 +125,14 @@ public class SettingsPane extends GridPane {
     IntStream.range(0, sorted.size()).forEach(robotIdx ->
       firstMeleeRound.getBattles().get(robotIdx % firstMeleeRound.getNumBattles())
         .getRobots().add(sorted.get(robotIdx)));
+    
+    tourney.getMeleeRounds().forEach(round -> {
+      if (round.getRoundNumber() == 1) {
+        round.getBattles().forEach(battle -> battle.setNumRobots(battle.getRobots().size()));
+      } else {
+        round.getBattles().forEach(battle -> battle.setNumRobots(tourney.getMaxMeleeSize()));
+      }
+    });
   }
 
   private void createVsBattles(Tourney tourney) {

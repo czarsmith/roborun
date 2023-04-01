@@ -3,6 +3,8 @@ package smi.roborun.mdl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import robocode.BattleResults;
 
 public class Battle {
@@ -16,6 +18,14 @@ public class Battle {
   private Integer battlefieldWidth;
   private Integer battlefieldHeight;
   private Integer tps;
+
+  /**
+   * The number of robots in this battle.  This is not simply the size of the robots list because
+   * we don't always know which robots will participate in a particular battle until previous
+   * battles are completed.  This number tells us how many robots to expect even before we know
+   * exactly which ones will be in this battle.
+   */
+  private IntegerProperty numRobots;
   private List<Robot> robots;
   private List<BattleResults> results;
   private Long desiredRuntimeMillis;
@@ -26,6 +36,7 @@ public class Battle {
     battlefieldHeight = 800;
     tps = 25;
     desiredRuntimeMillis = 30000L;
+    numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
     results = new ArrayList<>();
   }
@@ -78,6 +89,18 @@ public class Battle {
     this.battlefieldHeight = battlefieldHeight;
   }
 
+  public IntegerProperty getNumRobotsProperty() {
+    return numRobots;
+  }
+
+  public Integer getNumRobots() {
+    return numRobots.get();
+  }
+
+  public void setNumRobots(Integer numRobots) {
+    this.numRobots.set(numRobots);
+  }
+  
   public List<Robot> getRobots() {
     return robots;
   }

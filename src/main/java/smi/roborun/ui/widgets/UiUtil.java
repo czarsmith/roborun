@@ -15,7 +15,15 @@ public class UiUtil {
 
   public static Pane hspace() {
     Pane ui = new Pane();
-    HBox.setHgrow(ui, Priority.ALWAYS);
+    HBox.setHgrow(ui, Priority.SOMETIMES);
+    return ui;
+  }
+
+  public static Pane hspace(int width) {
+    Pane ui = new Pane();
+    ui.setMinWidth(width);
+    ui.setMaxWidth(width);
+    ui.setPrefWidth(width);
     return ui;
   }
 

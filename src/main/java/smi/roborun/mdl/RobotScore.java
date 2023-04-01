@@ -3,13 +3,30 @@ package smi.roborun.mdl;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
 public class RobotScore {
+  private IntegerProperty rank;
   private DoubleProperty score;
 
   public RobotScore() {
+    rank = new SimpleIntegerProperty(0);
     score = new SimpleDoubleProperty(0d);
+  }
+
+  @JsonIgnore
+  public IntegerProperty getRankProperty() {
+    return rank;
+  }
+
+  public double getRank() {
+    return rank.get();
+  }
+
+  public void setRank(int rank) {
+    this.rank.set(rank);
   }
 
   @JsonIgnore

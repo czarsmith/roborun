@@ -5,11 +5,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
+
+@JsonInclude(Include.NON_NULL)
 public class Tourney {
+  private LongProperty startTime;
+  private LongProperty endTime;
   private Long desiredRuntimeMillis;
   private Integer desiredTps;
   private Map<String, Robot> robots;
@@ -24,7 +33,27 @@ public class Tourney {
   private List<Round> vsRounds;
   private int numBattles;
 
+  /** The current round, if one is running. */
+  private ObjectProperty<Round> round;
+
+  /** The current battle if one is running. */
+  private ObjectProperty<Battle> battle;
+
   public Tourney() {
+    startTime = new SimpleLongProperty();
+    endTime = new SimpleLongProperty();
+    meleeRounds = new ArrayList<>();
+    vsRounds = new ArrayList<>();
+    robots = new HashMap<>();
+    round = new SimpleObjectProperty<>();
+    battle = new SimpleObjectProperty<>();
+
+    reset();
+  }
+  
+  public void reset() {
+    startTime.set(0L);
+    endTime.set(0L);
     desiredRuntimeMillis = 30000L;
     maxMeleeSize = 4;
     meleeBattlefieldWidth = 800;
@@ -34,11 +63,43 @@ public class Tourney {
     desiredTps = 25;
     numMeleeRoundsPerBattle = 10;
     numVsRoundsPerBattle = 10;
-    meleeRounds = new ArrayList<>();
-    vsRounds = new ArrayList<>();
-    robots = new HashMap<>();
+    meleeRounds.clear();
+    vsRounds.clear();
+    robots.clear();
+    round.set(null);
+    battle.set(null);
   }
-  
+
+  public boolean hasBattles() {
+    return !meleeRounds.isEmpty() && !meleeRounds.get(0).getBattles().isEmpty();
+  }
+
+  @JsonIgnore
+  public LongProperty getStartTimeProperty() {
+    return startTime;
+  }
+
+  public long getStartTime() {
+    return startTime.get();
+  }
+
+  public void setStartTime(long startTime) {
+    this.startTime.set(startTime);
+  }
+
+  @JsonIgnore
+  public LongProperty getEndTimeProperty() {
+    return endTime;
+  }
+
+  public long getEndTime() {
+    return endTime.get();
+  }
+
+  public void setEndTime(long endTime) {
+    this.endTime.set(endTime);
+  }
+
   public Long getDesiredRuntimeMillis() {
     return desiredRuntimeMillis;
   }
@@ -124,7 +185,8 @@ public class Tourney {
   }
 
   public void setRobots(List<Robot> robots) {
-    this.robots = robots.stream().collect(Collectors.toMap(Robot::getRobotName, r -> r));
+    this.robots.clear();
+    robots.forEach(robot -> this.robots.put(robot.getRobotName(), robot));
   }
 
   public int getNumBattles() {
@@ -134,4 +196,30 @@ public class Tourney {
   public void setNumBattles(int numBattles) {
     this.numBattles = numBattles;
   }
+
+  @JsonIgnore
+  public ObjectProperty<Round> getRoundProperty() {
+    return round;
+  }
+
+  public Round getRound() {
+    return round.get();
+  }
+
+  public void setRound(Round round) {
+    this.round.set(round);
+  }
+
+  @JsonIgnore
+  public ObjectProperty<Battle> getBattleProperty() {
+    return battle;
+  }
+
+  public Battle getBattle() {
+    return battle.get();
+  }
+
+  public void setBattle(Battle battle) {
+    this.battle.set(battle);
+  }  
 }

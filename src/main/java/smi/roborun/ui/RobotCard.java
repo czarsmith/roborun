@@ -2,6 +2,7 @@ package smi.roborun.ui;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Border;
@@ -15,7 +16,6 @@ import smi.roborun.mdl.Robot;
 
 public class RobotCard extends VBox {
   private Robot robot;
-  private Label battleScoreLabel;
 
   public RobotCard(Robot robot) {
     this.robot = robot;
@@ -23,19 +23,22 @@ public class RobotCard extends VBox {
     setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
     setPadding(new Insets(8));
 
-    Label displayName = new Label(getDisplayName());
-    displayName.setFont(new Font("Arial", 18));
-    getChildren().add(displayName);
+    String robotDisplayName = getDisplayName();
+    IntegerProperty battleRankProperty = robot.getBattleScore().getRankProperty();
+    Label displayNameLabel = new Label();
+    displayNameLabel.setFont(new Font("Arial", 18));
+    displayNameLabel.textProperty().bind(Bindings.createStringBinding(() ->
+      getRankDisplay((int)battleRankProperty.get()) + " " + robotDisplayName, battleRankProperty));
+    getChildren().add(displayNameLabel);
 
     Label packageName = new Label("(" + getPackageName() + ")");
     packageName.setFont(new Font("Arial", 10));
     getChildren().add(packageName);
 
-    DoubleProperty dp = robot.getBattleScore().getScoreProperty();
-
-    battleScoreLabel = new Label();
+    DoubleProperty battleScoreProperty = robot.getBattleScore().getScoreProperty();
+    Label battleScoreLabel = new Label();
     battleScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
-      "Battle Score: " + (int)dp.get(), dp));
+      "Battle Rank: " + (int)battleScoreProperty.get(), battleScoreProperty));
     packageName.setFont(new Font("Arial", 14));
     getChildren().add(battleScoreLabel);
   }
@@ -54,5 +57,9 @@ public class RobotCard extends VBox {
     String packageName = robot.getSpec().getClassName();
     packageName = packageName.substring(0, packageName.lastIndexOf("."));
     return packageName;
+  }
+
+  private String getRankDisplay(Integer rank) {
+    return rank == 0 ? "-" : rank.toString();
   }
 }
