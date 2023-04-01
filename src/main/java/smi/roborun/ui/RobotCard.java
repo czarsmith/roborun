@@ -31,7 +31,7 @@ public class RobotCard extends GridPane {
     GridPane.setColumnSpan(displayNameLabel, 2);
     add(displayNameLabel, 0, 0);
 
-    Label packageName = new Label("(" + robot.getPackageName() + ")");
+    Label packageName = new Label("(" + robot.getRobotName().substring(robot.getPackageName().length() + 1) + ")");
     packageName.setFont(new Font("Arial", 10));
     GridPane.setColumnSpan(packageName, 2);
     add(packageName, 0, 1);

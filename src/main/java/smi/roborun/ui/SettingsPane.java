@@ -31,6 +31,7 @@ public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
   private TextField maxMeleeSizeField;
+  private TextField tourneyTimeField;
   private Tourney tourney;
 
   public SettingsPane(BattleController ctl, Tourney tourney) {
@@ -59,6 +60,10 @@ public class SettingsPane extends GridPane {
     maxMeleeSizeField.setOnAction(e -> this.createTourney());
     form.add(new Label("Max Melee Size: "), 0, 0);
     form.add(maxMeleeSizeField, 1, 0);
+    tourneyTimeField = new TextField(Long.toString(tourney.getDesiredRuntimeMillis() / 1000));
+    tourneyTimeField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Tournament Duration Seconds: "), 0, 1);
+    form.add(tourneyTimeField, 1, 1);
     add(form, 0, 1);
 
     robots.forEach(r -> r.getSelectedProperty().addListener(b -> this.createTourney()));
@@ -68,14 +73,13 @@ public class SettingsPane extends GridPane {
     tourney.reset();
     tourney.setRobots(robots.filtered(Robot::getSelected));
     tourney.setMaxMeleeSize(Integer.parseInt(maxMeleeSizeField.getText()));
+    tourney.setDesiredRuntimeMillis(Long.parseLong(tourneyTimeField.getText()) * 1000);
 
     if (tourney.getRobots().size() < 2) {
       return;
     }
 
     createBattles(tourney);
-
-    applyTiming(tourney);
 
     tourney.setRound(tourney.getMeleeRounds().get(0));
     tourney.setBattle(tourney.getRound().getBattles().get(0));
@@ -147,11 +151,5 @@ public class SettingsPane extends GridPane {
   }
 
   private void createVsBattles(Tourney tourney) {
-  }
-
-  private void applyTiming(Tourney tourney) {
-    long battleMillis = tourney.getDesiredRuntimeMillis() / tourney.getNumBattles();
-    tourney.getMeleeRounds().forEach(round -> round.getBattles().forEach(battle ->
-      battle.setDesiredRuntimeMillis(battleMillis)));
   }
 }

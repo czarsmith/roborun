@@ -63,7 +63,9 @@ public class Tourney {
     desiredTps = 25;
     numMeleeRoundsPerBattle = 10;
     numVsRoundsPerBattle = 10;
+    meleeRounds.forEach(round -> round.getBattles().clear());
     meleeRounds.clear();
+    vsRounds.forEach(round -> round.getBattles().clear());
     vsRounds.clear();
     robots.clear();
     round.set(null);

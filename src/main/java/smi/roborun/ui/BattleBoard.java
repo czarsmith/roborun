@@ -48,6 +48,8 @@ public class BattleBoard extends GridPane implements TitledNode {
     this.tourney = tourney;
     title = new SimpleStringProperty("Battle Board");
     ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
+    ctl.addEventHandler(BattleEvent.ROUND_STARTED, this::onRoundStarted);
+    ctl.addEventHandler(BattleEvent.ROUND_FINISHED, this::onRoundFinished);
     ctl.addEventHandler(BattleEvent.TURN_FINISHED, this::onTurnFinished);
 
     // Center Pane
@@ -136,10 +138,23 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void resetTourney() {
     if (tourney.hasBattles()) {
+      tourney.getMeleeRounds().stream().forEach(round -> {
+        if (round.getRoundNumber() > 1) {
+          round.getBattles().forEach(battle -> battle.getRobots().clear());
+        }
+        round.getBattles().forEach(battle -> battle.getResults().clear());
+      });
+      tourney.getVsRounds().stream().forEach(round ->
+        round.getBattles().forEach(battle -> {
+          battle.getRobots().clear();
+          battle.getResults().clear();
+        }));
       tourney.setRound(tourney.getMeleeRounds().get(0));
       tourney.setBattle(tourney.getRound().getBattles().get(0));
+      tourney.getBattle().setBattleRound(0);
       tourney.getRobots().stream().map(Robot::getOverallScore).forEach(RobotScore::reset);
       tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset);
+      updateTitle();
     }
   }
 
@@ -213,15 +228,26 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void updateTitle() {
     if (tourney.getRound() != null && tourney.getBattle() != null) {
-      title.set("Battle Board (Round " + tourney.getRound().getRoundNumber() + " of " + tourney.getMeleeRounds().size()
-        + ", Battle " + tourney.getBattle().getBattleNumber() + " of " + tourney.getRound().getBattles().size() + ")");
+      title.set(
+        "Battle Board (Round " + tourney.getRound().getRoundNumber() + " of " + tourney.getMeleeRounds().size()
+        + ", Battle " + tourney.getBattle().getBattleNumber() + " of " + tourney.getRound().getBattles().size()
+        + ", " + Math.round(100 * (double)tourney.getBattle().getBattleRound() / tourney.getNumMeleeRoundsPerBattle()) + "%)");
     } else {
       title.set("Battle Board");
     }
   }
 
+  private void applyTiming() {
+    long remainingTourneyTime = tourney.getDesiredRuntimeMillis() - (System.currentTimeMillis() - tourney.getStartTime());
+    List<Battle> remainingBattles = tourney.getMeleeRounds().stream().flatMap(round -> round.getBattles().stream())
+      .filter(battle -> battle.getResults().isEmpty()).collect(Collectors.toList());
+    long battleMillis = remainingTourneyTime / remainingBattles.size();
+    remainingBattles.forEach(battle -> battle.setDesiredRuntimeMillis(battleMillis));
+  }
+
   private void runBattle() {
     if (tourney.getBattle() != null) {
+      applyTiming(); // Adjust timing before each battle
       new Thread(new TourneyThread()).start();
     }
   }
@@ -253,10 +279,17 @@ public class BattleBoard extends GridPane implements TitledNode {
   }
 
   private void onTurnFinished(BattleEvent e) {
-    nowPlayingCards.getChildren().stream()
-      .sorted(
+    nowPlayingCards.getChildren().stream().sorted(
         Comparator.comparing(card -> ((RobotCard)card).getRobot().getBattleScore().getScore())
           .thenComparing(card -> ((RobotCard)card).getRobot().getRobotName()))
       .forEach(n -> n.toBack());
+  }
+
+  private void onRoundStarted(BattleEvent e) {
+    updateTitle();
+  }
+
+  private void onRoundFinished(BattleEvent e) {
+    updateTitle();
   }
 }

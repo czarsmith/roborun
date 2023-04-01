@@ -34,6 +34,7 @@ import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.stage.Stage;
+import robocode.BattleResults;
 import robocode.control.BattleSpecification;
 import robocode.control.BattlefieldSpecification;
 import robocode.control.RobocodeEngine;
@@ -41,6 +42,7 @@ import robocode.control.RobotSpecification;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
 import robocode.control.events.BattleStartedEvent;
+import robocode.control.events.RoundEndedEvent;
 import robocode.control.events.RoundStartedEvent;
 import robocode.control.events.TurnEndedEvent;
 import robocode.control.snapshot.IScoreSnapshot;
@@ -64,6 +66,8 @@ public class BattleController extends BattleAdaptor {
   private ScheduledExecutorService ses;
   private ScheduledFuture<?> tpsNext;
   private ScheduledFuture<?> tpsMax;
+  private long nextEventTimeMillis = 0;
+  private long eventRateMillis = 500;
 
   public BattleController(Stage stage) {
     this.stage = stage;
@@ -100,8 +104,8 @@ public class BattleController extends BattleAdaptor {
 
     setTps(battle.getTps());
 
-    tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), battle.getDesiredRuntimeMillis() * 2 / 3, TimeUnit.MILLISECONDS);
-    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), battle.getDesiredRuntimeMillis() * 5 / 6, TimeUnit.MILLISECONDS);
+    tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), battle.getDesiredRuntimeMillis() * 1 / 3, TimeUnit.MILLISECONDS);
+    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), battle.getDesiredRuntimeMillis() * 2 / 3, TimeUnit.MILLISECONDS);
 
     try {
       battleThread.join();
@@ -206,6 +210,7 @@ public class BattleController extends BattleAdaptor {
     tpsNext.cancel(true);
     tpsMax.cancel(true);
     Platform.runLater(() -> {
+      updateScores(e.getSortedResults());
       battle.setResults(Arrays.asList(e.getSortedResults()));
       stage.fireEvent(BattleEvent.finished(tourney, round, battle));
     });
@@ -213,35 +218,61 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onRoundStarted(RoundStartedEvent e) {
-    System.out.println("Round: " + e.getRound());
+    Platform.runLater(() -> {
+      battle.setBattleRound(e.getRound());
+      stage.fireEvent(BattleEvent.roundStarted());
+    });
+  }
+
+  @Override
+  public void onRoundEnded(RoundEndedEvent e) {
+    Platform.runLater(() -> stage.fireEvent(BattleEvent.roundFinished()));
   }
 
   @Override
   public void onTurnEnded(TurnEndedEvent e) {
-    Platform.runLater(() -> {
-      IScoreSnapshot[] scores = e.getTurnSnapshot().getSortedTeamScores();
-      for (int i = 0; i < scores.length; i++) {
-        Robot r = tourney.getRobot(scores[i].getName());
-        if (r == null) {
-          System.out.println(scores[i].getName());
-        }
+    if (System.currentTimeMillis() >= nextEventTimeMillis) {
+      nextEventTimeMillis = System.currentTimeMillis() + eventRateMillis;
+      Platform.runLater(() -> {
+        IScoreSnapshot[] scores = e.getTurnSnapshot().getSortedTeamScores();
+        updateScores(scores);
+        stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
+      });
+    }
+  }
 
-        RobotScore score = tourney.getRobot(scores[i].getName()).getBattleScore();
-        double previousScore = score.getScore();
-        score.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
-        score.setRank(score.getScore() == 0 ? 0 : i + 1);
+  private void updateScores(BattleResults[] scores) {
+    for (int i = 0; i < scores.length; i++) {
+      RobotScore score = tourney.getRobot(scores[i].getTeamLeaderName()).getBattleScore();
+      double previousScore = score.getScore();
+      score.setScore(scores[i].getScore());
+      score.setRank(score.getScore() == 0 ? 0 : i + 1);
 
-        RobotScore overallScore = tourney.getRobot(scores[i].getName()).getOverallScore();
-        overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
-      }
+      RobotScore overallScore = tourney.getRobot(scores[i].getTeamLeaderName()).getOverallScore();
+      overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
+    }
+    updateOverallScores();
+  }
 
-      List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getOverallScore)
-        .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
-      for (int i = 0; i < sorted.size(); i++) {
-        sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);
-      }
-      stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
-    });
+  private void updateScores(IScoreSnapshot[] scores) {
+    for (int i = 0; i < scores.length; i++) {
+      RobotScore score = tourney.getRobot(scores[i].getName()).getBattleScore();
+      double previousScore = score.getScore();
+      score.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
+      score.setRank(score.getScore() == 0 ? 0 : i + 1);
+
+      RobotScore overallScore = tourney.getRobot(scores[i].getName()).getOverallScore();
+      overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
+    }
+    updateOverallScores();
+  }
+
+  private void updateOverallScores() {
+    List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getOverallScore)
+      .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
+    for (int i = 0; i < sorted.size(); i++) {
+      sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);
+    }
   }
 
   public void addEventHandler(EventType<BattleEvent> e, EventHandler<BattleEvent> handler) {

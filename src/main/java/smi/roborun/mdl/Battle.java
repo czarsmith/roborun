@@ -3,6 +3,8 @@ package smi.roborun.mdl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import robocode.BattleResults;
@@ -30,6 +32,9 @@ public class Battle {
   private List<BattleResults> results;
   private Long desiredRuntimeMillis;
 
+  /** The robocode battle round, not the tournament round. */
+  private IntegerProperty battleRound;
+
   public Battle() {
     numRounds = 3;
     battlefieldWidth = 800;
@@ -39,6 +44,7 @@ public class Battle {
     numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
     results = new ArrayList<>();
+    battleRound = new SimpleIntegerProperty();
   }
 
   public Long getId() {
@@ -128,5 +134,18 @@ public class Battle {
 
   public void setDesiredRuntimeMillis(Long desiredRuntimeMillis) {
     this.desiredRuntimeMillis = desiredRuntimeMillis;
+  }
+
+  @JsonIgnore
+  public IntegerProperty getBattleRoundProperty() {
+    return battleRound;
+  }
+
+  public Integer getBattleRound() {
+    return battleRound.get();
+  }
+
+  public void setBattleRound(Integer battleRound) {
+    this.battleRound.set(battleRound);
   }
 }
