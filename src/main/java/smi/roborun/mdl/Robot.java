@@ -49,14 +49,6 @@ public class Robot {
     overallScore = new SimpleObjectProperty<>(new RobotScore());
     battleScore = new SimpleObjectProperty<>(new RobotScore());
 
-    IntegerProperty orp = overallScore.get().getRankProperty();
-    shortNameAndRank.bind(Bindings.createStringBinding(() ->
-      (orp.get() == 0 ? "-" : orp.get()) + " " + shortName.get(), orp));
-
-    IntegerProperty brp = battleScore.get().getRankProperty();
-    shortNameAndBattleRank.bind(Bindings.createStringBinding(() ->
-      (brp.get() == 0 ? "-" : brp.get()) + " " + shortName.get(), brp));
-  
     // Calculate code size
     try {
       // Weird Robocode stuff apparently
@@ -69,6 +61,35 @@ public class Robot {
       }
     } catch (Exception e) {
       System.out.println("Unknown robot path: " + spec.getJarFile());
+    }
+
+    reset(true);
+  }
+
+  public void reset(boolean hard) {
+    shortName.unbind();
+    packageName.unbind();
+    shortNameAndRank.unbind();
+    shortNameAndBattleRank.unbind();
+    author.unbind();
+    robotName.unbind();
+    codeSize.unbind();
+    meleeSeed.unbind();
+    overallScore.unbind();
+    overallScore.set(new RobotScore());
+    battleScore.unbind();
+    battleScore.set(new RobotScore());
+
+    IntegerProperty orp = overallScore.get().getRankProperty();
+    shortNameAndRank.bind(Bindings.createStringBinding(() ->
+      (orp.get() == 0 ? "-" : orp.get()) + " " + shortName.get(), orp));
+
+    IntegerProperty brp = battleScore.get().getRankProperty();
+    shortNameAndBattleRank.bind(Bindings.createStringBinding(() ->
+      (brp.get() == 0 ? "-" : brp.get()) + " " + shortName.get(), brp));
+    
+    if (hard) {
+      meleeSeed.set(0);
     }
   }
 

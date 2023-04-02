@@ -12,6 +12,15 @@ public class Round {
     this.roundNumber = number;
     this.numBattles = numBattles;
     battles = new ArrayList<>();
+    reset(true);
+  }
+
+  public void reset(boolean hard) {
+    battles.forEach(battle -> battle.reset(hard));
+
+    if (hard) {
+      battles.clear();
+    }
   }
 
   public Integer getRoundNumber() {

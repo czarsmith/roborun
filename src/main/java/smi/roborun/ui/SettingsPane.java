@@ -70,7 +70,7 @@ public class SettingsPane extends GridPane {
   }
 
   public void createTourney() {
-    tourney.reset();
+    tourney.reset(true);
     tourney.setRobots(robots.filtered(Robot::getSelected));
     tourney.setMaxMeleeSize(Integer.parseInt(maxMeleeSizeField.getText()));
     tourney.setDesiredRuntimeMillis(Long.parseLong(tourneyTimeField.getText()) * 1000);

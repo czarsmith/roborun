@@ -39,23 +39,29 @@ public class Battle {
   private long startTime;
 
   public Battle() {
-    numRounds = 3;
-    battlefieldWidth = 800;
-    battlefieldHeight = 800;
-    tps = 25;
-    desiredRuntimeMillis = 30000L;
     numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
     results = new ArrayList<>();
     battleRound = new SimpleIntegerProperty();
-    reset();
+    reset(true);
   }
 
-  public void reset() {
+  public void reset(boolean hard) {
     numRobots.unbind();
-    results = new ArrayList<>();
+    battleRound.unbind();
     battleRound.set(0);
     startTime = 0;
+    results.clear();
+    robots.forEach(robot -> robot.reset(hard));
+
+    if (hard) {
+      numRounds = 3;
+      battlefieldWidth = 800;
+      battlefieldHeight = 800;
+      tps = 25;
+      desiredRuntimeMillis = 30000L;
+      robots.clear();
+    }
   }
 
   public Long getId() {

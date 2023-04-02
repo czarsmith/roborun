@@ -48,11 +48,14 @@ public class Tourney {
     round = new SimpleObjectProperty<>();
     battle = new SimpleObjectProperty<>();
 
-    reset();
+    reset(true);
   }
   
-  public void reset() {
+  /** Hard reset is for when the tournament settings change.  Soft reset is for running the same tournament again. */
+  public void reset(boolean hard) {
+    startTime.unbind();
     startTime.set(0L);
+    endTime.unbind();
     endTime.set(0L);
     desiredRuntimeMillis = 30000L;
     maxMeleeSize = 4;
@@ -63,13 +66,18 @@ public class Tourney {
     desiredTps = 25;
     numMeleeRoundsPerBattle = 10;
     numVsRoundsPerBattle = 10;
-    meleeRounds.forEach(round -> round.getBattles().clear());
-    meleeRounds.clear();
-    vsRounds.forEach(round -> round.getBattles().clear());
-    vsRounds.clear();
-    robots.clear();
+    round.unbind();
     round.set(null);
+    battle.unbind();
     battle.set(null);
+    meleeRounds.forEach(round -> round.reset(hard));
+    vsRounds.forEach(round -> round.reset(hard));
+    
+    if (hard) {
+      meleeRounds.clear();
+      vsRounds.clear();  
+      robots.clear();
+    }
   }
 
   public boolean hasBattles() {

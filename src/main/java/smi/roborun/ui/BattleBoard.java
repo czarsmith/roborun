@@ -30,7 +30,6 @@ import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.RobotScore;
 import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.SvgButton;
@@ -54,7 +53,7 @@ public class BattleBoard extends GridPane implements TitledNode {
 
     // Center Pane
     Button playBtn = new SvgButton("/icons/play-solid.svg", e -> startTourney());
-    Button resetBtn = new SvgButton("/icons/rotate-right-solid.svg", e -> resetTourney());
+    Button resetBtn = new SvgButton("/icons/rotate-right-solid.svg", e -> reset());
     ToolBar toolBar = new ToolBar();
     toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace());
     Pane robocodePlaceholder = new Pane();
@@ -123,7 +122,13 @@ public class BattleBoard extends GridPane implements TitledNode {
     RowConstraints r2 = new RowConstraints();
     getRowConstraints().addAll(r1, r2);
 
+    reset();
+  }
+
+  private void reset() {
+    tourney.reset(false);
     tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
+    updateTitle();
   }
 
   @Override
@@ -134,28 +139,6 @@ public class BattleBoard extends GridPane implements TitledNode {
   @Override
   public String getTitle() {
     return title.get();
-  }
-
-  private void resetTourney() {
-    if (tourney.hasBattles()) {
-      tourney.getMeleeRounds().stream().forEach(round -> {
-        if (round.getRoundNumber() > 1) {
-          round.getBattles().forEach(Battle::reset);
-        }
-        round.getBattles().forEach(Battle::reset);
-      });
-      tourney.getVsRounds().stream().forEach(round ->
-        round.getBattles().forEach(battle -> {
-          battle.getRobots().clear();
-          battle.getResults().clear();
-        }));
-      tourney.setRound(tourney.getMeleeRounds().get(0));
-      tourney.setBattle(tourney.getRound().getBattles().get(0));
-      tourney.getBattle().setBattleRound(0);
-      tourney.getRobots().stream().map(Robot::getOverallScore).forEach(RobotScore::reset);
-      tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset);
-      updateTitle();
-    }
   }
 
   private void startTourney() {
