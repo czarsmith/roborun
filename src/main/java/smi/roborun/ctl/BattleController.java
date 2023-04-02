@@ -64,8 +64,9 @@ public class BattleController extends BattleAdaptor {
 //  private ScheduledFuture<?> tpsMax;
   private long nextEventTimeMillis = 0;
   private long eventRateMillis = 500;
-  private boolean doubleSpeed;
-  private boolean maxSpeed;
+  private long doubleSpeed;
+  private long maxSpeed;
+  private double maxRate;
 
   public BattleController(Stage stage) {
     this.stage = stage;
@@ -95,6 +96,10 @@ public class BattleController extends BattleAdaptor {
     this.round = round;
     this.battle = battle;
 
+    if (battle.getRoundNumber() == 1 && battle.getBattleNumber() == 1) {
+      maxRate = 0;
+    }
+    
     Thread battleThread = new Thread(new BattleThread());
     battleThread.start();
 
@@ -200,8 +205,8 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onBattleStarted(BattleStartedEvent e) {
-    doubleSpeed = false;
-    maxSpeed = false;
+    doubleSpeed = 0;
+    maxSpeed = 0;
     battle.setStartTime(System.currentTimeMillis());
     Platform.runLater(() -> tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset));
   }
@@ -210,6 +215,7 @@ public class BattleController extends BattleAdaptor {
   public void onBattleCompleted(BattleCompletedEvent e) {
 //    tpsNext.cancel(true);
 //    tpsMax.cancel(true);
+    maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
       battle.setResults(Arrays.asList(e.getSortedResults()));
@@ -242,13 +248,18 @@ public class BattleController extends BattleAdaptor {
     }
 
     // Adjust the battle speed to achive desired runtime
-    if (!doubleSpeed && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() / 3)) {
+    if (doubleSpeed == 0 && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() / 3)) {
       setTps(battle.getTps() * 2);
-      doubleSpeed = true;
-    } else if (!maxSpeed && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() * 2 / 3)) {
-      setTps(Integer.MAX_VALUE);
-      maxSpeed = true;
-    }
+      doubleSpeed = System.currentTimeMillis();
+    } else if (maxSpeed == 0) {
+      if (maxRate > 0 && System.currentTimeMillis() > battle.getStartTime() + maxRate * battle.getNumRobots() * battle.getNumRounds()) {
+        setTps(Integer.MAX_VALUE);
+        maxSpeed = System.currentTimeMillis();
+      } else if (maxSpeed == 0 && System.currentTimeMillis() > (battle.getStartTime() + battle.getDesiredRuntimeMillis() * 2 / 3)) {
+        setTps(Integer.MAX_VALUE);
+        maxSpeed = System.currentTimeMillis();
+      }
+    } 
   }
 
   private void updateScores(BattleResults[] scores) {

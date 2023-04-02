@@ -6,7 +6,6 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import robocode.BattleResults;
 
@@ -54,7 +53,7 @@ public class Battle {
 
   public void reset() {
     numRobots.unbind();
-    results.clear();
+    results = new ArrayList<>();
     battleRound.set(0);
     startTime = 0;
   }

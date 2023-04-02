@@ -140,9 +140,9 @@ public class BattleBoard extends GridPane implements TitledNode {
     if (tourney.hasBattles()) {
       tourney.getMeleeRounds().stream().forEach(round -> {
         if (round.getRoundNumber() > 1) {
-          round.getBattles().forEach(battle -> battle.getRobots().clear());
+          round.getBattles().forEach(Battle::reset);
         }
-        round.getBattles().forEach(battle -> battle.getResults().clear());
+        round.getBattles().forEach(Battle::reset);
       });
       tourney.getVsRounds().stream().forEach(round ->
         round.getBattles().forEach(battle -> {
