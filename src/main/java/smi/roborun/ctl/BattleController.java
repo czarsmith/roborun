@@ -50,7 +50,6 @@ import smi.roborun.RobocodeConfig;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.RobotScore;
-import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
@@ -61,7 +60,6 @@ public class BattleController extends BattleAdaptor {
   private File robocodeDir;
   private Stage stage;
   private Tourney tourney;
-  private Round round;
   private Battle battle;
   private ScheduledExecutorService ses;
   private ScheduledFuture<?> tpsNext;
@@ -72,8 +70,9 @@ public class BattleController extends BattleAdaptor {
   private long maxSpeed;
   private double maxRate;
 
-  public BattleController(Stage stage) {
+  public BattleController(Stage stage, Tourney tourney) {
     this.stage = stage;
+    this.tourney = tourney;
     ses = Executors.newSingleThreadScheduledExecutor();
 
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
@@ -95,10 +94,8 @@ public class BattleController extends BattleAdaptor {
     return Arrays.asList(engine.getLocalRepository());
   }
 
-  public void execute(Tourney tourney, Round round, Battle battle) {
-    this.tourney = tourney;
-    this.round = round;
-    this.battle = battle;
+  public void execute() {
+    this.battle = tourney.getBattle();
 
     if (battle.getRoundNumber() == 1 && battle.getBattleNumber() == 1) {
       maxRate = 0;
@@ -220,18 +217,18 @@ public class BattleController extends BattleAdaptor {
   @Override
   public void onBattleStarted(BattleStartedEvent e) {
     battle.setStartTime(System.currentTimeMillis());
-    Platform.runLater(() -> tourney.getRobots().stream().map(Robot::getBattleScore).forEach(RobotScore::reset));
   }
 
   @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
     tpsNext.cancel(true);
     tpsMax.cancel(true);
+    battle.setEndTime(System.currentTimeMillis());
     maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
       battle.getResults().addAll(Arrays.asList(e.getSortedResults()));
-      stage.fireEvent(BattleEvent.finished(tourney, round, battle));
+      stage.fireEvent(BattleEvent.finished(tourney, battle));
     });
   }
 
@@ -255,7 +252,7 @@ public class BattleController extends BattleAdaptor {
       Platform.runLater(() -> {
         IScoreSnapshot[] scores = e.getTurnSnapshot().getSortedTeamScores();
         updateScores(scores);
-        stage.fireEvent(BattleEvent.turnFinished(tourney, round, battle));
+        stage.fireEvent(BattleEvent.turnFinished(tourney, battle));
       });
     }
   }
@@ -267,7 +264,7 @@ public class BattleController extends BattleAdaptor {
       score.setScore(scores[i].getScore());
       score.setRank(score.getScore() == 0 ? 0 : i + 1);
 
-      RobotScore overallScore = tourney.getRobot(scores[i].getTeamLeaderName()).getOverallScore();
+      RobotScore overallScore = tourney.getRobot(scores[i].getTeamLeaderName()).getTotalScore();
       overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
     }
     updateOverallScores();
@@ -280,14 +277,14 @@ public class BattleController extends BattleAdaptor {
       score.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
       score.setRank(score.getScore() == 0 ? 0 : i + 1);
 
-      RobotScore overallScore = tourney.getRobot(scores[i].getName()).getOverallScore();
+      RobotScore overallScore = tourney.getRobot(scores[i].getName()).getTotalScore();
       overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
     }
     updateOverallScores();
   }
 
   private void updateOverallScores() {
-    List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getOverallScore)
+    List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getTotalScore)
       .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
     for (int i = 0; i < sorted.size(); i++) {
       sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);

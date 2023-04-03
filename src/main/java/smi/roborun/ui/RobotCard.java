@@ -36,7 +36,7 @@ public class RobotCard extends GridPane {
     GridPane.setColumnSpan(packageName, 2);
     add(packageName, 0, 1);
 
-    DoubleProperty osp = robot.getOverallScore().getScoreProperty();
+    DoubleProperty osp = robot.getTotalScore().getScoreProperty();
     Label overallScoreLabel = new Label();
     overallScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
       Integer.toString((int)osp.get()), osp));

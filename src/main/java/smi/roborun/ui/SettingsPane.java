@@ -23,7 +23,6 @@ import smi.roborun.ctl.BattleController;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
 
@@ -80,9 +79,7 @@ public class SettingsPane extends GridPane {
     }
 
     createBattles(tourney);
-
-    tourney.setRound(tourney.getMeleeRounds().get(0));
-    tourney.setBattle(tourney.getRound().getBattles().get(0));
+    tourney.setBattle(tourney.getBattles().get(0));
 
     // Log the entire tournament model
     try {
@@ -101,52 +98,52 @@ public class SettingsPane extends GridPane {
   private void createMeleeBattles(Tourney tourney) {
     int totalRobots = tourney.getRobots().size();
 
-    // Assign random seeds for melee
-    Random rand = new Random();
-    int seed = 1;
-    tourney.getRobots().forEach(r -> r.setMeleeSeed(rand.nextInt(1000)));
-    List<Robot> sorted = tourney.getRobots().stream().sorted(Comparator.comparing(Robot::getMeleeSeed))
-      .collect(Collectors.toList());
-    for (int i = 0; i < sorted.size(); i++) {
-      sorted.get(i).setMeleeSeed(seed++);
-    }
-
     int numRounds = 1;
     while (totalRobots > Math.pow(2, numRounds - 1) * tourney.getMaxMeleeSize()){
       numRounds++; // There has to be a better way to calculate this
     }
-    for (int i = 0; i < numRounds; i++) {
-      tourney.getMeleeRounds().add(new Round(i + 1, (int)Math.pow(2, numRounds - i - 1)));
-    }
 
     // Initialize all of the battles
-    tourney.getMeleeRounds().forEach(meleeRound -> {
-      IntStream.range(0, meleeRound.getNumBattles()).forEach(battleIdx -> {
+    final int numRoundsFinal = numRounds;
+    IntStream.range(0, numRounds).forEach(roundIdx -> {
+      int numBattlesInRound = (int)Math.pow(2, numRoundsFinal - roundIdx - 1);
+      IntStream.range(0, numBattlesInRound).forEach(battleIdx -> {
         Battle battle = new Battle();
         battle.setType(BattleType.MELEE);
         battle.setBattlefieldHeight(tourney.getMeleeBattlefieldWidth());
         battle.setBattlefieldHeight(tourney.getMeleeBattlefieldHeight());
         battle.setNumRounds(tourney.getNumMeleeRoundsPerBattle());
         battle.setTps(tourney.getDesiredTps());
-        battle.setRoundNumber(meleeRound.getRoundNumber());
+        battle.setRoundNumber(roundIdx + 1);
         battle.setBattleNumber(battleIdx + 1);
-        meleeRound.getBattles().add(battle);
-        tourney.setNumBattles(tourney.getNumBattles() + 1);
-      });  
+        tourney.getBattles().add(battle);
+
+        if (numBattlesInRound > 1) {
+          battle.setAdvanceToBattleNumber((battle.getBattleNumber() - 1) / 2 + 1);
+        }    
+      });
     });
 
+    // Assign random seeds for melee
+    Random rand = new Random();
+    int seed = 1;
+    tourney.getRobots().forEach(r -> r.setRandomSeed(rand.nextInt(1000)));
+    List<Robot> sorted = tourney.getRobots().stream().sorted(Comparator.comparing(Robot::getRandomSeed))
+      .collect(Collectors.toList());
+    for (int i = 0; i < sorted.size(); i++) {
+      sorted.get(i).setRandomSeed(seed++);
+    }
+
     // Distribute all of the robots evenly in the first melee round
-    Round firstMeleeRound = tourney.getMeleeRounds().get(0);
+    List<Battle> firstRoundBattles = tourney.getBattles().stream()
+      .filter(b -> b.getRoundNumber() == 1).collect(Collectors.toList());
     IntStream.range(0, sorted.size()).forEach(robotIdx ->
-      firstMeleeRound.getBattles().get(robotIdx % firstMeleeRound.getNumBattles())
-        .getRobots().add(sorted.get(robotIdx)));
+      firstRoundBattles.get(robotIdx % firstRoundBattles.size()).getRobots().add(sorted.get(robotIdx)));
     
-    tourney.getMeleeRounds().forEach(round -> {
-      if (round.getRoundNumber() == 1) {
-        round.getBattles().forEach(battle -> battle.setNumRobots(battle.getRobots().size()));
-      } else {
-        round.getBattles().forEach(battle -> battle.setNumRobots(tourney.getMaxMeleeSize()));
-      }
+    // For each battle, record the number of robots that will participate.
+    IntStream.range(0, numRounds).forEach(roundIdx -> {
+      tourney.getBattles().stream().filter(b -> b.getRoundNumber() == roundIdx + 1).forEach(b ->
+        b.setNumRobots(roundIdx == 0 ? b.getRobots().size() : tourney.getMaxMeleeSize()));
     });
   }
 

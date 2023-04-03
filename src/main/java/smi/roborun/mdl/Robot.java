@@ -29,8 +29,8 @@ public class Robot {
   private StringProperty author;
   private StringProperty robotName;
   private ObjectProperty<Integer> codeSize;
-  private ObjectProperty<Integer> meleeSeed;
-  private ObjectProperty<RobotScore> overallScore;
+  private ObjectProperty<Integer> randomSeed;
+  private ObjectProperty<RobotScore> totalScore;
   private ObjectProperty<RobotScore> battleScore;
 
   private RobotSpecification spec;
@@ -45,9 +45,17 @@ public class Robot {
     author = new SimpleStringProperty(StringUtils.defaultIfBlank(spec.getAuthorName(), "Unknown"));
     robotName = new SimpleStringProperty(spec.getNameAndVersion());
     codeSize = new SimpleObjectProperty<>(0);
-    meleeSeed = new SimpleObjectProperty<>(0);
-    overallScore = new SimpleObjectProperty<>(new RobotScore());
+    randomSeed = new SimpleObjectProperty<>(0);
+    totalScore = new SimpleObjectProperty<>(new RobotScore());
     battleScore = new SimpleObjectProperty<>(new RobotScore());
+
+    IntegerProperty trp = totalScore.get().getRankProperty();
+    shortNameAndRank.bind(Bindings.createStringBinding(() ->
+      (trp.get() == 0 ? "-" : trp.get()) + " " + shortName.get(), trp));
+
+    IntegerProperty brp = battleScore.get().getRankProperty();
+    shortNameAndBattleRank.bind(Bindings.createStringBinding(() ->
+      (brp.get() == 0 ? "-" : brp.get()) + " " + shortName.get(), brp));  
 
     // Calculate code size
     try {
@@ -67,29 +75,21 @@ public class Robot {
   }
 
   public void reset(boolean hard) {
-    shortName.unbind();
-    packageName.unbind();
-    shortNameAndRank.unbind();
-    shortNameAndBattleRank.unbind();
-    author.unbind();
-    robotName.unbind();
-    codeSize.unbind();
-    meleeSeed.unbind();
-    overallScore.unbind();
-    overallScore.set(new RobotScore());
-    battleScore.unbind();
-    battleScore.set(new RobotScore());
+    totalScore.get().reset(hard);
+    battleScore.get().reset(hard);
 
-    IntegerProperty orp = overallScore.get().getRankProperty();
-    shortNameAndRank.bind(Bindings.createStringBinding(() ->
-      (orp.get() == 0 ? "-" : orp.get()) + " " + shortName.get(), orp));
-
-    IntegerProperty brp = battleScore.get().getRankProperty();
-    shortNameAndBattleRank.bind(Bindings.createStringBinding(() ->
-      (brp.get() == 0 ? "-" : brp.get()) + " " + shortName.get(), brp));
-    
     if (hard) {
-      meleeSeed.set(0);
+      battleScore.unbind();
+      shortName.unbind();
+      packageName.unbind();
+      shortNameAndRank.unbind();
+      shortNameAndBattleRank.unbind();
+      author.unbind();
+      robotName.unbind();
+      codeSize.unbind();
+      randomSeed.unbind();
+      totalScore.unbind();
+      randomSeed.set(0);
     }
   }
 
@@ -190,26 +190,30 @@ public class Robot {
   }
 
   @JsonIgnore
-  public ObjectProperty<Integer> getMeleeSeedProperty() {
-    return meleeSeed;
+  public ObjectProperty<Integer> getRandomSeedProperty() {
+    return randomSeed;
   }
 
-  public Integer getMeleeSeed() {
-    return meleeSeed.get();
+  public Integer getRandomSeed() {
+    return randomSeed.get();
   }
 
-  public void setMeleeSeed(Integer meleeSeed) {
-    this.meleeSeed.set(meleeSeed);
+  public void setRandomSeed(Integer randomSeed) {
+    this.randomSeed.set(randomSeed);
   }
 
-  public ObjectProperty<RobotScore> getOverallScoreProperty() {
-    return overallScore;
+  public ObjectProperty<RobotScore> getTotalScoreProperty() {
+    return totalScore;
   }
 
-  public RobotScore getOverallScore() {
-    return overallScore.get();
+  public RobotScore getTotalScore() {
+    return totalScore.get();
   }
 
+  public void setTotalScore(RobotScore totalScore) {
+    this.totalScore.set(totalScore);
+  }
+  
   public ObjectProperty<RobotScore> getBattleScoreProperty() {
     return battleScore;
   }

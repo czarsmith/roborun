@@ -36,7 +36,7 @@ public class Roborun extends Application {
   @Override
   public void start(Stage stage) {
     Tourney tourney = new Tourney();
-    ctl = new BattleController(stage);
+    ctl = new BattleController(stage, tourney);
 
     title = new Label();
     title.setFont(new Font("Arial", 24));

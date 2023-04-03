@@ -1,6 +1,5 @@
 package smi.roborun.mdl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +13,8 @@ import javafx.beans.property.LongProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 @JsonInclude(Include.NON_NULL)
 public class Tourney {
@@ -26,26 +27,19 @@ public class Tourney {
   private Integer numMeleeRoundsPerBattle;
   private Integer meleeBattlefieldWidth;
   private Integer meleeBattlefieldHeight;
-  private List<Round> meleeRounds;
   private Integer numVsRoundsPerBattle;
   private Integer vsBattlefieldWidth;
   private Integer vsBattlefieldHeight;
-  private List<Round> vsRounds;
-  private int numBattles;
+  private ObservableList<Battle> battles;
 
-  /** The current round, if one is running. */
-  private ObjectProperty<Round> round;
-
-  /** The current battle if one is running. */
+  /** The current battle.  This is always non-null whenever there is at least one battle defined. */
   private ObjectProperty<Battle> battle;
 
   public Tourney() {
     startTime = new SimpleLongProperty();
     endTime = new SimpleLongProperty();
-    meleeRounds = new ArrayList<>();
-    vsRounds = new ArrayList<>();
     robots = new HashMap<>();
-    round = new SimpleObjectProperty<>();
+    battles = FXCollections.observableArrayList();
     battle = new SimpleObjectProperty<>();
 
     reset(true);
@@ -53,35 +47,27 @@ public class Tourney {
   
   /** Hard reset is for when the tournament settings change.  Soft reset is for running the same tournament again. */
   public void reset(boolean hard) {
-    startTime.unbind();
     startTime.set(0L);
-    endTime.unbind();
     endTime.set(0L);
-    desiredRuntimeMillis = 30000L;
-    maxMeleeSize = 4;
-    meleeBattlefieldWidth = 800;
-    meleeBattlefieldHeight = 800;
-    vsBattlefieldWidth = 600;
-    vsBattlefieldHeight = 600;
-    desiredTps = 25;
-    numMeleeRoundsPerBattle = 10;
-    numVsRoundsPerBattle = 10;
-    round.unbind();
-    round.set(null);
-    battle.unbind();
-    battle.set(null);
-    meleeRounds.forEach(round -> round.reset(hard));
-    vsRounds.forEach(round -> round.reset(hard));
+    robots.values().forEach(robot -> robot.reset(hard));
+    battles.forEach(battle -> battle.reset(hard));
     
     if (hard) {
-      meleeRounds.clear();
-      vsRounds.clear();  
+      desiredRuntimeMillis = 30000L;
+      maxMeleeSize = 4;
+      meleeBattlefieldWidth = 800;
+      meleeBattlefieldHeight = 800;
+      vsBattlefieldWidth = 600;
+      vsBattlefieldHeight = 600;
+      desiredTps = 25;
+      numMeleeRoundsPerBattle = 10;
+      numVsRoundsPerBattle = 10;
+      battles.clear();
       robots.clear();
+      battle.set(null);
+    } else {
+      // TODO: set battle to first one
     }
-  }
-
-  public boolean hasBattles() {
-    return !meleeRounds.isEmpty() && !meleeRounds.get(0).getBattles().isEmpty();
   }
 
   @JsonIgnore
@@ -169,21 +155,6 @@ public class Tourney {
   public void setDesiredTps(Integer desiredTps) {
     this.desiredTps = desiredTps;
   }
-  public List<Round> getMeleeRounds() {
-    return meleeRounds;
-  }
-
-  public void setMeleeRounds(List<Round> meleeRounds) {
-    this.meleeRounds = meleeRounds;
-  }
-
-  public List<Round> getVsRounds() {
-    return vsRounds;
-  }
-
-  public void setVsRounds(List<Round> vsRounds) {
-    this.vsRounds = vsRounds;
-  }
 
   @JsonIgnore
   public Robot getRobot(String name) {
@@ -199,25 +170,13 @@ public class Tourney {
     robots.forEach(robot -> this.robots.put(robot.getRobotName(), robot));
   }
 
-  public int getNumBattles() {
-    return numBattles;
+  public ObservableList<Battle> getBattles() {
+    return battles;
   }
 
-  public void setNumBattles(int numBattles) {
-    this.numBattles = numBattles;
-  }
-
-  @JsonIgnore
-  public ObjectProperty<Round> getRoundProperty() {
-    return round;
-  }
-
-  public Round getRound() {
-    return round.get();
-  }
-
-  public void setRound(Round round) {
-    this.round.set(round);
+  public void setBattles(List<Battle> battles) {
+    this.battles.clear();
+    this.battles.addAll(battles);
   }
 
   @JsonIgnore

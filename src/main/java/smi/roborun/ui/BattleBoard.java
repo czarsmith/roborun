@@ -30,7 +30,6 @@ import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.SvgButton;
 import smi.roborun.ui.widgets.UiUtil;
@@ -150,21 +149,15 @@ public class BattleBoard extends GridPane implements TitledNode {
   private void onBattleChanged() {
     updateTitle();
 
-    if (!tourney.hasBattles()) {
+    if (tourney.getBattles().isEmpty()) {
       return;
     }
 
     // Up Next
     upNextTiles.getChildren().clear();
-    if (tourney.getRound() != null) {
-      Battle nextBattle = null;
-      if (tourney.getBattle() == null) {
-        nextBattle = tourney.getRound().getBattles().get(0);
-      } else if (tourney.getRound().getNumBattles() > tourney.getBattle().getBattleNumber()) { // Same Round, Next Battle
-        nextBattle = tourney.getRound().getBattles().get(tourney.getBattle().getBattleNumber());
-      } else if (tourney.getMeleeRounds().size() > tourney.getRound().getRoundNumber()) { // Next Round, Next Battle
-        nextBattle = tourney.getMeleeRounds().get(tourney.getRound().getRoundNumber()).getBattles().get(0);
-      }  
+    if (tourney.getBattle() != null) {
+      int currBattleIdx = tourney.getBattles().indexOf(tourney.getBattle());
+      Battle nextBattle = tourney.getBattles().size() > currBattleIdx + 1 ? tourney.getBattles().get(currBattleIdx + 1) : null;
       if (nextBattle != null) {
         nextBattle.getRobots().stream().map(RobotTile::new).forEach(tile -> {
           FlowPane.setMargin(tile, new Insets(4));
@@ -189,32 +182,27 @@ public class BattleBoard extends GridPane implements TitledNode {
     }
   }
 
-  private void setNextBattle() {
-    if (tourney.getBattle() == null) { // First battle
-      tourney.setRound(tourney.getMeleeRounds().get(0));
-      tourney.setBattle(tourney.getRound().getBattles().get(0));
-    } else if (tourney.getRound().getNumBattles() > tourney.getBattle().getBattleNumber()) { // Same Round, Next Battle
-      tourney.setBattle(tourney.getRound().getBattles().get(tourney.getBattle().getBattleNumber()));
-    } else if (tourney.getMeleeRounds().size() > tourney.getRound().getRoundNumber()) { // Next Round, Next Battle
-      tourney.setRound(tourney.getMeleeRounds().get(tourney.getRound().getRoundNumber()));
-      tourney.setBattle(tourney.getRound().getBattles().get(0));
-    } else { // Tournament finished
+  private Battle setNextBattle() {
+    int currBattleIdx = tourney.getBattles().indexOf(tourney.getBattle());
+    Battle nextBattle = tourney.getBattles().size() > currBattleIdx + 1 ? tourney.getBattles().get(currBattleIdx + 1) : null;
+
+    if (nextBattle == null) {
       tourney.setEndTime(System.currentTimeMillis());
       double seconds = (tourney.getEndTime() - tourney.getStartTime()) / 1000d;
       System.out.println("Tournament finished in " + seconds + " seconds");
-      tourney.setRound(null);
-      tourney.setBattle(null);
+    } else {
+      tourney.setBattle(nextBattle);
     }
 
     updateTitle();
+
+    return nextBattle;
   }
 
   private void updateTitle() {
-    if (tourney.getRound() != null && tourney.getBattle() != null) {
+    if (tourney.getBattle() != null) {
       title.set(
-        "Battle Board (Round " + tourney.getRound().getRoundNumber() + " of " + tourney.getMeleeRounds().size()
-        + ", Battle " + tourney.getBattle().getBattleNumber() + " of " + tourney.getRound().getBattles().size()
-        + ", " + Math.round(100 * (double)tourney.getBattle().getBattleRound() / tourney.getNumMeleeRoundsPerBattle()) + "%)");
+        "Battle Board (Battle " + tourney.getBattle().getBattleNumber() + " of " + tourney.getBattles().size() + ")");
     } else {
       title.set("Battle Board");
     }
@@ -222,7 +210,7 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void applyTiming() {
     long remainingTourneyTime = tourney.getDesiredRuntimeMillis() - (System.currentTimeMillis() - tourney.getStartTime());
-    List<Battle> remainingBattles = tourney.getMeleeRounds().stream().flatMap(round -> round.getBattles().stream())
+    List<Battle> remainingBattles = tourney.getBattles().stream()
       .filter(battle -> battle.getResults().isEmpty()).collect(Collectors.toList());
     long battleMillis = remainingTourneyTime / remainingBattles.size();
     remainingBattles.forEach(battle -> battle.setDesiredRuntimeMillis(battleMillis));
@@ -237,28 +225,30 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private class TourneyThread implements Runnable {
     public void run() {
-      System.out.println("STARTED Round " + tourney.getRound().getRoundNumber()
+      System.out.println("STARTED Round " + tourney.getBattle().getRoundNumber()
         + " Battle " + tourney.getBattle().getBattleNumber());
-      ctl.execute(tourney, tourney.getRound(), tourney.getBattle());
+      ctl.execute();
     }  
   }
 
   private void onBattleFinished(BattleEvent e) {
-    Round round = e.getRound();
     Battle battle = e.getBattle();
-    System.out.println("FINSHED Round " + round.getRoundNumber() + " Battle " + battle.getBattleNumber());
-    if (round.getNumBattles() > 1) {
-      battle.getResults().subList(0, battle.getResults().size() / 2).stream()
-        .forEach(br -> System.out.println(br.getTeamLeaderName()));
-      List<Robot> topFinishers = battle.getResults().subList(0, battle.getResults().size() / 2).stream()
+    System.out.println("FINSHED Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
+
+    if (battle.getAdvanceToBattleNumber() != null) {
+      List<Robot> topFinishers = battle.getResults().subList(0, (int)Math.ceil(battle.getResults().size() / 2d)).stream()
         .map(BattleResults::getTeamLeaderName)
         .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
         .collect(Collectors.toList());
-      Round nextRound = tourney.getMeleeRounds().get(round.getRoundNumber());
-      nextRound.getBattles().get((battle.getBattleNumber() - 1) / 2).getRobots().addAll(topFinishers);
+      Battle nextBattle = tourney.getBattles().stream().filter(b ->
+        b.getBattleNumber() == battle.getAdvanceToBattleNumber()
+          && b.getType() == battle.getType() && b.getRoundNumber() == battle.getRoundNumber() + 1).findAny().orElse(null);
+      nextBattle.getRobots().addAll(topFinishers);
     }
-    setNextBattle();
-    runBattle();
+
+    if (setNextBattle() != null) {
+      runBattle();
+    }
   }
 
   private void onTurnFinished(BattleEvent e) {

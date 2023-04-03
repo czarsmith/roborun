@@ -7,15 +7,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import robocode.BattleResults;
 
 public class Battle {
   public enum BattleType { MELEE, VS };
 
-  private Long id;
   private BattleType type;
+
+  /** 1-Based round number */
   private Integer roundNumber;
+
+  /** 1-Based battle number relative to the round. */
   private Integer battleNumber;
+
   private Integer numRounds;
   private Integer battlefieldWidth;
   private Integer battlefieldHeight;
@@ -29,7 +35,7 @@ public class Battle {
    */
   private IntegerProperty numRobots;
   private List<Robot> robots;
-  private List<BattleResults> results;
+  private ObservableList<BattleResults> results;
   private Long desiredRuntimeMillis;
 
   /** The robocode battle round, not the tournament round. */
@@ -38,19 +44,23 @@ public class Battle {
   /** This can't be observable because it's not updated on the UI event thread */
   private long startTime;
 
+  /** This can't be observable because it's not updated on the UI event thread */
+  private long endTime;
+
+  private Integer advanceToBattleNumber;
+
   public Battle() {
     numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
-    results = new ArrayList<>();
+    results = FXCollections.observableArrayList();
     battleRound = new SimpleIntegerProperty();
     reset(true);
   }
 
   public void reset(boolean hard) {
-    numRobots.unbind();
-    battleRound.unbind();
     battleRound.set(0);
     startTime = 0;
+    endTime = 0;
     results.clear();
     robots.forEach(robot -> robot.reset(hard));
 
@@ -61,15 +71,10 @@ public class Battle {
       tps = 25;
       desiredRuntimeMillis = 30000L;
       robots.clear();
+      advanceToBattleNumber = null;
     }
   }
 
-  public Long getId() {
-    return id;
-  }
-  public void setId(Long id) {
-    this.id = id;
-  }
   public BattleType getType() {
     return type;
   }
@@ -130,11 +135,14 @@ public class Battle {
   public void setRobots(List<Robot> robots) {
     this.robots = robots;
   }
-  public List<BattleResults> getResults() {
+
+  public ObservableList<BattleResults> getResults() {
     return results;
   }
+
   public void setResults(List<BattleResults> results) {
-    this.results = results;
+    this.results.clear();
+    this.results.addAll(results);
   }
 
   public Integer getTps() {
@@ -172,5 +180,21 @@ public class Battle {
 
   public void setStartTime(long startTime) {
     this.startTime = startTime;
+  }
+
+  public long getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(long endTime) {
+    this.endTime = endTime;
+  }
+
+  public Integer getAdvanceToBattleNumber() {
+    return advanceToBattleNumber;
+  }
+
+  public void setAdvanceToBattleNumber(Integer advanceToBattleNumber) {
+    this.advanceToBattleNumber = advanceToBattleNumber;
   }
 }
