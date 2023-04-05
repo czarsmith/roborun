@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package smi.roborun.ui.widgets;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.ImageView;

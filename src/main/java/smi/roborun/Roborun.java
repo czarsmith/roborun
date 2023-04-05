@@ -2,15 +2,14 @@ package smi.roborun;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -38,6 +37,9 @@ public class Roborun extends Application {
     Tourney tourney = new Tourney();
     ctl = new BattleController(stage, tourney);
 
+    Label appName = new Label("Roborun");
+    appName.setFont(new Font("Arial", 24));
+
     title = new Label();
     title.setFont(new Font("Arial", 24));
 
@@ -58,9 +60,8 @@ public class Roborun extends Application {
 
     ToolBar toolBar = new ToolBar();
     Pane titlePane = new Pane(title);
-//    HBox.setHgrow(titlePane, Priority.ALWAYS);
-//    HBox.setHgrow(closeBtn, Priority.SOMETIMES);
-    toolBar.getItems().addAll(titlePane, UiUtil.hspace(), startBtn, settingsBtn, meleeBtn, vsBtn, UiUtil.hspace(16), closeBtn);
+    toolBar.getItems().addAll(appName, titlePane, UiUtil.hspace(),
+      startBtn, settingsBtn, meleeBtn, vsBtn, UiUtil.hspace(16), closeBtn);
 
     BorderPane borderPane = new BorderPane();
     borderPane.setTop(toolBar);
@@ -81,9 +82,9 @@ public class Roborun extends Application {
   private void show(String label, Node node) {
     title.textProperty().unbind();
     if (node instanceof TitledNode titled) {
-      title.textProperty().bind(titled.getTitleProperty());
+      title.textProperty().bind(Bindings.createStringBinding(() -> " - " + titled.getTitle(), titled.getTitleProperty()));
     } else {
-      title.setText(label);
+      title.setText(" - " + label);
     }
     centerPane.show(node);
   }

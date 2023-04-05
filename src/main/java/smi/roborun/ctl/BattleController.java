@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -108,7 +109,8 @@ public class BattleController extends BattleAdaptor {
 
     setTps(battle.getTps());
 
-    System.out.println(maxRate);
+    System.out.println("Battle Started at: " + new Date());
+    System.out.println("Max Rate: " + maxRate);
     maxSpeed = System.currentTimeMillis() + battle.getDesiredRuntimeMillis() * 2 / 3;
     if (maxRate > 0) {
       maxSpeed = (long)(System.currentTimeMillis() + battle.getDesiredRuntimeMillis() - maxRate * battle.getNumRobots() * battle.getNumRounds());
@@ -116,6 +118,8 @@ public class BattleController extends BattleAdaptor {
     maxSpeed = Math.max(System.currentTimeMillis(), maxSpeed);
     doubleSpeed = System.currentTimeMillis() + (maxSpeed - System.currentTimeMillis()) / 2;
     doubleSpeed = Math.max(System.currentTimeMillis(), doubleSpeed);
+    System.out.println("Double Speed: " + new Date(doubleSpeed));
+    System.out.println("Max Speed: " + new Date(maxSpeed));
     if (doubleSpeed < maxSpeed) {
       tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), doubleSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
     }
@@ -224,6 +228,7 @@ public class BattleController extends BattleAdaptor {
     tpsNext.cancel(true);
     tpsMax.cancel(true);
     battle.setEndTime(System.currentTimeMillis());
+    System.out.println("Battle Ended at: " + new Date());
     maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());

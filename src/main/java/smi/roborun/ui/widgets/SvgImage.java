@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package smi.roborun.ui.widgets;
 
 import java.awt.image.BufferedImage;
 import java.io.InputStream;

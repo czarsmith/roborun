@@ -66,7 +66,7 @@ public class Tourney {
       robots.clear();
       battle.set(null);
     } else {
-      // TODO: set battle to first one
+      battle.set(battles.isEmpty() ? null : battles.get(0));
     }
   }
 

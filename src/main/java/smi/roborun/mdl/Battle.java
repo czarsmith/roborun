@@ -72,6 +72,8 @@ public class Battle {
       desiredRuntimeMillis = 30000L;
       robots.clear();
       advanceToBattleNumber = null;
+    } else if (roundNumber > 1 || type != BattleType.MELEE) {
+      robots.clear(); // Because only the first melee round has predetermined participants
     }
   }
 

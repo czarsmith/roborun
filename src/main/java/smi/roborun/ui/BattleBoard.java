@@ -1,6 +1,7 @@
 package smi.roborun.ui;
 
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,6 +30,7 @@ import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
+import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.SvgButton;
@@ -121,12 +123,13 @@ public class BattleBoard extends GridPane implements TitledNode {
     RowConstraints r2 = new RowConstraints();
     getRowConstraints().addAll(r1, r2);
 
+    tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
+
     reset();
   }
 
   private void reset() {
     tourney.reset(false);
-    tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
     updateTitle();
   }
 
@@ -141,6 +144,7 @@ public class BattleBoard extends GridPane implements TitledNode {
   }
 
   private void startTourney() {
+    System.out.println("Tournament Started at: " + new Date());
     tourney.setStartTime(System.currentTimeMillis());
     tourney.setEndTime(0L);
     runBattle();
@@ -187,6 +191,7 @@ public class BattleBoard extends GridPane implements TitledNode {
     Battle nextBattle = tourney.getBattles().size() > currBattleIdx + 1 ? tourney.getBattles().get(currBattleIdx + 1) : null;
 
     if (nextBattle == null) {
+      System.out.println("Tournament Ended at: " + new Date());
       tourney.setEndTime(System.currentTimeMillis());
       double seconds = (tourney.getEndTime() - tourney.getStartTime()) / 1000d;
       System.out.println("Tournament finished in " + seconds + " seconds");
@@ -201,8 +206,16 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void updateTitle() {
     if (tourney.getBattle() != null) {
+      Battle battle = tourney.getBattle();
+      BattleType type = battle.getType();
+      int maxRound = tourney.getBattles().stream().filter(b -> b.getType().equals(type))
+        .map(Battle::getRoundNumber).max(Comparator.naturalOrder()).orElse(0);
+      int maxBattle = tourney.getBattles().stream().filter(b -> b.getType().equals(type))
+        .filter(b -> b.getRoundNumber() == battle.getRoundNumber())
+        .map(Battle::getBattleNumber).max(Comparator.naturalOrder()).orElse(0);
       title.set(
-        "Battle Board (Battle " + tourney.getBattle().getBattleNumber() + " of " + tourney.getBattles().size() + ")");
+        "Battle Board (" + type + " Round " + battle.getRoundNumber() + " of " + maxRound
+        + ", Battle " + battle.getBattleNumber() + " of " + maxBattle + ")");
     } else {
       title.set("Battle Board");
     }
@@ -210,9 +223,12 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void applyTiming() {
     long remainingTourneyTime = tourney.getDesiredRuntimeMillis() - (System.currentTimeMillis() - tourney.getStartTime());
+    System.out.println("Remaining Time: " + remainingTourneyTime);
     List<Battle> remainingBattles = tourney.getBattles().stream()
       .filter(battle -> battle.getResults().isEmpty()).collect(Collectors.toList());
+    System.out.println("Remaining Battles: " + remainingBattles.size());    
     long battleMillis = remainingTourneyTime / remainingBattles.size();
+    System.out.println("Remaining Battle Millis: " + battleMillis);    
     remainingBattles.forEach(battle -> battle.setDesiredRuntimeMillis(battleMillis));
   }
 
