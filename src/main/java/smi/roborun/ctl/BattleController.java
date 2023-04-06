@@ -228,10 +228,12 @@ public class BattleController extends BattleAdaptor {
     tpsNext.cancel(true);
     tpsMax.cancel(true);
     battle.setEndTime(System.currentTimeMillis());
+    
     System.out.println("Battle Ended at: " + new Date());
     maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
+      battle.getRobots().forEach(r -> r.getBattleScore().reset(false));
       battle.getResults().addAll(Arrays.asList(e.getSortedResults()));
       stage.fireEvent(BattleEvent.finished(tourney, battle));
     });
@@ -264,35 +266,41 @@ public class BattleController extends BattleAdaptor {
 
   private void updateScores(BattleResults[] scores) {
     for (int i = 0; i < scores.length; i++) {
-      RobotScore score = tourney.getRobot(scores[i].getTeamLeaderName()).getBattleScore();
-      double previousScore = score.getScore();
-      score.setScore(scores[i].getScore());
-      score.setRank(score.getScore() == 0 ? 0 : i + 1);
+      RobotScore battleScore = tourney.getRobot(scores[i].getTeamLeaderName()).getBattleScore();
+      double previousScore = battleScore.getScore();
+      battleScore.setScore(scores[i].getScore());
+      battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
 
-      RobotScore overallScore = tourney.getRobot(scores[i].getTeamLeaderName()).getTotalScore();
-      overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
+      if (!battle.isPreliminary()) {
+        RobotScore totalScore = tourney.getRobot(scores[i].getTeamLeaderName()).getTotalScore();
+        totalScore.setScore(totalScore.getScore() + battleScore.getScore() - previousScore);  
+      }
     }
-    updateOverallScores();
+    updateTotalRank();
   }
 
   private void updateScores(IScoreSnapshot[] scores) {
     for (int i = 0; i < scores.length; i++) {
-      RobotScore score = tourney.getRobot(scores[i].getName()).getBattleScore();
-      double previousScore = score.getScore();
-      score.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
-      score.setRank(score.getScore() == 0 ? 0 : i + 1);
+      RobotScore battleScore = tourney.getRobot(scores[i].getName()).getBattleScore();
+      double previousScore = battleScore.getScore();
+      battleScore.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
+      battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
 
-      RobotScore overallScore = tourney.getRobot(scores[i].getName()).getTotalScore();
-      overallScore.setScore(overallScore.getScore() + score.getScore() - previousScore);
+      if (!battle.isPreliminary()) {
+        RobotScore totalScore = tourney.getRobot(scores[i].getName()).getTotalScore();
+        totalScore.setScore(totalScore.getScore() + battleScore.getScore() - previousScore);
+      }
     }
-    updateOverallScores();
+    updateTotalRank();
   }
 
-  private void updateOverallScores() {
-    List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getTotalScore)
-      .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
-    for (int i = 0; i < sorted.size(); i++) {
-      sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);
+  private void updateTotalRank() {
+    if (!battle.isPreliminary()) {
+      List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getTotalScore)
+        .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
+      for (int i = 0; i < sorted.size(); i++) {
+        sorted.get(i).setRank(sorted.get(i).getScore() == 0 ? 0 : i + 1);
+      }
     }
   }
 

@@ -186,7 +186,7 @@ public class BattleBoard extends GridPane implements TitledNode {
     }
   }
 
-  private Battle setNextBattle() {
+  private Battle getNextBattle() {
     int currBattleIdx = tourney.getBattles().indexOf(tourney.getBattle());
     Battle nextBattle = tourney.getBattles().size() > currBattleIdx + 1 ? tourney.getBattles().get(currBattleIdx + 1) : null;
 
@@ -195,11 +195,7 @@ public class BattleBoard extends GridPane implements TitledNode {
       tourney.setEndTime(System.currentTimeMillis());
       double seconds = (tourney.getEndTime() - tourney.getStartTime()) / 1000d;
       System.out.println("Tournament finished in " + seconds + " seconds");
-    } else {
-      tourney.setBattle(nextBattle);
     }
-
-    updateTitle();
 
     return nextBattle;
   }
@@ -239,6 +235,47 @@ public class BattleBoard extends GridPane implements TitledNode {
     }
   }
 
+  private void assignRobotsToVsBattles() {
+    List<Robot> sorted = tourney.getRobots().stream()
+      .sorted(Comparator.comparing(r -> r.getTotalScore().getScore(), Comparator.reverseOrder()))
+      .collect(Collectors.toList());
+
+    int totalRobots = tourney.getRobots().size();
+    int numRounds = tourney.getBattles().stream().filter(b -> b.getType() == BattleType.VS).map(Battle::getRoundNumber)
+      .max(Comparator.naturalOrder()).orElse(1);
+
+    int numFirstRoundBattles = totalRobots - (int)Math.pow(2, numRounds - 1);
+    int maxFirstRoundBattles = (int)Math.pow(2, numRounds - 1);
+    final int constNumRounds = numRounds;
+    IntStream.range(0, 2).forEach(roundIdx -> {
+      int maxNumBattlesInRound = (int)Math.pow(2, constNumRounds - roundIdx - 1);
+      int numBattlesInRound = roundIdx == 0 ? numFirstRoundBattles : maxNumBattlesInRound;
+      IntStream.range(0, numBattlesInRound).forEach(battleIdx -> {
+        if (roundIdx == 0) {
+          Battle battle = getBattle(BattleType.VS, roundIdx + 1, battleIdx + 1);
+          battle.getRobots().add(sorted.get(totalRobots - numBattlesInRound * 2 + battleIdx));
+          battle.getRobots().add(sorted.get(totalRobots - battleIdx - 1));  
+        } else if (numFirstRoundBattles < maxFirstRoundBattles) {
+          Battle battle = getBattle(BattleType.VS, roundIdx + 1, battleIdx + 1);
+          if (battleIdx < totalRobots - numFirstRoundBattles * 2) {
+            battle.getRobots().add(sorted.get(battleIdx));
+          }
+          if (totalRobots - battleIdx * 2 <= totalRobots - numFirstRoundBattles * 2) {
+            battle.getRobots().add(sorted.get(totalRobots - numFirstRoundBattles * 2 - battleIdx));  
+          }
+        }
+      });
+    });
+  }
+
+  private Battle getBattle(BattleType type, int roundNumber, int battleNumber) {
+    return tourney.getBattles().stream()
+      .filter(b -> b.getType() == type)
+      .filter(b -> b.getRoundNumber() == roundNumber)
+      .filter(b -> b.getBattleNumber() == battleNumber)
+      .findAny().orElse(null);
+  }
+
   private class TourneyThread implements Runnable {
     public void run() {
       System.out.println("STARTED Round " + tourney.getBattle().getRoundNumber()
@@ -251,18 +288,29 @@ public class BattleBoard extends GridPane implements TitledNode {
     Battle battle = e.getBattle();
     System.out.println("FINSHED Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
 
-    if (battle.getAdvanceToBattleNumber() != null) {
-      List<Robot> topFinishers = battle.getResults().subList(0, (int)Math.ceil(battle.getResults().size() / 2d)).stream()
-        .map(BattleResults::getTeamLeaderName)
-        .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
-        .collect(Collectors.toList());
-      Battle nextBattle = tourney.getBattles().stream().filter(b ->
-        b.getBattleNumber() == battle.getAdvanceToBattleNumber()
-          && b.getType() == battle.getType() && b.getRoundNumber() == battle.getRoundNumber() + 1).findAny().orElse(null);
-      nextBattle.getRobots().addAll(topFinishers);
-    }
+    Battle nextBattle = getNextBattle();
+    if (nextBattle != null) {
+      if (battle.getType() == BattleType.MELEE && nextBattle.getType() == BattleType.VS) {
+        // We're at a special point in the tournament where the melee just ended and the
+        // 1v1 is just beginning.  We need to assign the robots to the 1v1 battles based
+        // on their current ranks.
+        assignRobotsToVsBattles();
+      }
 
-    if (setNextBattle() != null) {
+      // Move the winners into their next battle
+      if (battle.getAdvanceToBattleNumber() != null) {
+        List<Robot> topFinishers = battle.getResults().subList(0, (int)Math.ceil(battle.getResults().size() / 2d)).stream()
+          .map(BattleResults::getTeamLeaderName)
+          .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
+          .collect(Collectors.toList());
+        Battle advanceToBattle = tourney.getBattles().stream().filter(b ->
+          b.getBattleNumber() == battle.getAdvanceToBattleNumber()
+            && b.getType() == battle.getType() && b.getRoundNumber() == battle.getRoundNumber() + 1).findAny().orElse(null);
+          advanceToBattle.getRobots().addAll(topFinishers);
+      }
+  
+      tourney.setBattle(nextBattle);  
+      updateTitle();
       runBattle();
     }
   }

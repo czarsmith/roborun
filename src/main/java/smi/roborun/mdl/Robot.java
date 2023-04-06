@@ -79,16 +79,6 @@ public class Robot {
     battleScore.get().reset(hard);
 
     if (hard) {
-      battleScore.unbind();
-      shortName.unbind();
-      packageName.unbind();
-      shortNameAndRank.unbind();
-      shortNameAndBattleRank.unbind();
-      author.unbind();
-      robotName.unbind();
-      codeSize.unbind();
-      randomSeed.unbind();
-      totalScore.unbind();
       randomSeed.set(0);
     }
   }
@@ -202,6 +192,7 @@ public class Robot {
     this.randomSeed.set(randomSeed);
   }
 
+  @JsonIgnore
   public ObjectProperty<RobotScore> getTotalScoreProperty() {
     return totalScore;
   }
@@ -214,6 +205,7 @@ public class Robot {
     this.totalScore.set(totalScore);
   }
   
+  @JsonIgnore
   public ObjectProperty<RobotScore> getBattleScoreProperty() {
     return battleScore;
   }

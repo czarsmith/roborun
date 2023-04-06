@@ -49,6 +49,9 @@ public class Battle {
 
   private Integer advanceToBattleNumber;
 
+  /** True if this battle is part of a preliminary round which doesn't count toward the total score. */
+  private boolean preliminary;
+
   public Battle() {
     numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
@@ -72,6 +75,7 @@ public class Battle {
       desiredRuntimeMillis = 30000L;
       robots.clear();
       advanceToBattleNumber = null;
+      preliminary = false;
     } else if (roundNumber > 1 || type != BattleType.MELEE) {
       robots.clear(); // Because only the first melee round has predetermined participants
     }
@@ -119,6 +123,7 @@ public class Battle {
     this.battlefieldHeight = battlefieldHeight;
   }
 
+  @JsonIgnore
   public IntegerProperty getNumRobotsProperty() {
     return numRobots;
   }
@@ -198,5 +203,13 @@ public class Battle {
 
   public void setAdvanceToBattleNumber(Integer advanceToBattleNumber) {
     this.advanceToBattleNumber = advanceToBattleNumber;
+  }
+
+  public boolean isPreliminary() {
+    return preliminary;
+  }
+
+  public void setPreliminary(boolean preliminary) {
+    this.preliminary = preliminary;
   }
 }
