@@ -1,5 +1,8 @@
 package smi.roborun.ui.widgets;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -36,5 +39,24 @@ public class UiUtil {
 
   public static void error(String message) {
     new Alert(AlertType.ERROR, message).showAndWait();
+  }
+
+  public static String millisToHMS(long millis) {
+    long hours = millis / 3600000;
+    long minutes = millis % 3600000 / 60000;
+    long seconds = millis % 60000 / 1000;
+    return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+  }
+
+  public static long hmsToMillis(String hms) {
+    Pattern p = Pattern.compile("(\\d\\d):(\\d\\d):(\\d\\d)");
+    Matcher m = p.matcher(hms);
+    long millis = 0;
+    if (m.matches()) {
+      millis = Integer.parseInt(m.group(1)) * 3600000
+        + Integer.parseInt(m.group(2)) * 60000
+        + Integer.parseInt(m.group(3)) * 1000;
+    }
+    return millis;
   }
 }

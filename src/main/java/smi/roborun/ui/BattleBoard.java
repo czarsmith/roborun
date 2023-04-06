@@ -1,10 +1,14 @@
 package smi.roborun.ui;
 
+import java.io.File;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -13,19 +17,15 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import net.sf.robocode.io.FileUtil;
 import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
@@ -42,10 +42,13 @@ public class BattleBoard extends GridPane implements TitledNode {
   private FlowPane nowPlayingCards;
   private FlowPane upNextTiles;
   private StringProperty title;
+  private String robocodeDir;
 
-  public BattleBoard(BattleController ctl, Tourney tourney) {
+  public BattleBoard(BattleController ctl, Tourney tourney, String robocodeDir) {
     this.ctl = ctl;
     this.tourney = tourney;
+    this.robocodeDir = robocodeDir;
+
     title = new SimpleStringProperty("Battle Board");
     ctl.addEventHandler(BattleEvent.FINISHED, this::onBattleFinished);
     ctl.addEventHandler(BattleEvent.ROUND_STARTED, this::onRoundStarted);
@@ -59,15 +62,14 @@ public class BattleBoard extends GridPane implements TitledNode {
     toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace());
     Pane robocodePlaceholder = new Pane();
     VBox centerPane = new VBox(toolBar, robocodePlaceholder);
-    centerPane.setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
     VBox.setVgrow(robocodePlaceholder, Priority.ALWAYS);
 
     // Now Playing
     Label nowPlayingTitle = new Label("Now Playing");
     nowPlayingTitle.setFont(new Font("Arial", 24));
+    nowPlayingTitle.setUnderline(true);
 
     nowPlayingCards = new FlowPane();
-    nowPlayingCards.setBorder(new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
 
     GridPane nowPlaying = new GridPane();
     nowPlaying.add(nowPlayingTitle, 0, 0);
@@ -83,13 +85,20 @@ public class BattleBoard extends GridPane implements TitledNode {
     // Bracket
     Label bracketTitle = new Label("Bracket");
     bracketTitle.setFont(new Font("Arial", 24));
+    bracketTitle.setUnderline(true);
 
-    FlowPane bracketGui = new FlowPane();
-    bracketGui.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
-
+    FlowPane bracketGui = new FlowPane(new Label("  Coming Soon..."));
+    
     GridPane bracket = new GridPane();
     bracket.add(bracketTitle, 0, 0);
     bracket.add(bracketGui, 0, 1);
+    ColumnConstraints bcc1 = new ColumnConstraints();
+    bcc1.setHalignment(HPos.CENTER);
+    bracket.getColumnConstraints().add(bcc1);
+    RowConstraints brow1 = new RowConstraints();
+    RowConstraints brow2 = new RowConstraints();
+    brow2.setVgrow(Priority.ALWAYS);
+    bracket.getRowConstraints().addAll(brow1, brow2);
     
     // Up Next
     Label upNextTitle = new Label("Up Next: ");
@@ -195,6 +204,16 @@ public class BattleBoard extends GridPane implements TitledNode {
       tourney.setEndTime(System.currentTimeMillis());
       double seconds = (tourney.getEndTime() - tourney.getStartTime()) / 1000d;
       System.out.println("Tournament finished in " + seconds + " seconds");
+
+      // Save the tournament model
+      File file = new File(robocodeDir, "roborun/tourney-" + System.currentTimeMillis() + ".json");
+      FileUtil.createDir(file.getParentFile());
+      try {
+        ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        om.writeValue(file, tourney);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
 
     return nextBattle;

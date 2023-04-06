@@ -6,31 +6,35 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.Tourney;
+import smi.roborun.ui.widgets.TextInput;
 import smi.roborun.ui.widgets.UiUtil;
 
 public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
-  private TextField maxMeleeSizeField;
-  private TextField tourneyTimeField;
+  private TextInput tourneyTimeField;
+  private TextInput tpsField;
+  private TextInput roundsPerMeleeField;
+  private TextInput maxMeleeSizeField;
+  private TextInput meleeWidthField;
+  private TextInput meleeHeightField;
+  private TextInput roundsPerVsField;
+  private TextInput vsWidthField;
+  private TextInput vsHeightField;
   private Tourney tourney;
 
   public SettingsPane(BattleController ctl, Tourney tourney) {
@@ -40,8 +44,8 @@ public class SettingsPane extends GridPane {
     robots = FXCollections.observableArrayList(ctl.getRobots().stream().map(Robot::new).collect(Collectors.toList()));
 
     robotGrid = new TableView<>();
+    robotGrid.setPrefWidth(400);
     robotGrid.setEditable(true);
-    robotGrid.setMaxWidth(Double.MAX_VALUE);
     TableColumn<Robot, Boolean> selectedCol = UiUtil.tableCol("Selected", cd -> cd.getValue().getSelectedProperty());
     selectedCol.setCellFactory(col -> new CheckBoxTableCell<>());
     robotGrid.getColumns().add(selectedCol);
@@ -51,18 +55,58 @@ public class SettingsPane extends GridPane {
     robotGrid.getItems().addAll(robots);
     robotGrid.getColumns().get(2).setSortType(TableColumn.SortType.DESCENDING);
     robotGrid.getSortOrder().add(robotGrid.getColumns().get(2));
-    GridPane.setHgrow(robotGrid, Priority.ALWAYS);
     add(robotGrid, 0, 0);
 
     GridPane form = new GridPane();
-    maxMeleeSizeField = new TextField(Integer.toString(tourney.getMaxMeleeSize()));
-    maxMeleeSizeField.setOnAction(e -> this.createTourney());
-    form.add(new Label("Max Melee Size: "), 0, 0);
-    form.add(maxMeleeSizeField, 1, 0);
-    tourneyTimeField = new TextField(Long.toString(tourney.getDesiredRuntimeMillis() / 1000));
+    form.setPadding(new Insets(16));
+    form.setHgap(16);
+    form.setVgap(16);
+
+    tourneyTimeField = new TextInput(UiUtil.millisToHMS(tourney.getDesiredRuntimeMillis()), "[0-9][0-9]:[0-9][0-9]:[0-9][0-9]");
     tourneyTimeField.setOnAction(e -> this.createTourney());
-    form.add(new Label("Tournament Duration Seconds: "), 0, 1);
-    form.add(tourneyTimeField, 1, 1);
+    form.add(new Label("Tournament Duration (HH:MM:SS): "), 0, 0);
+    form.add(tourneyTimeField, 1, 0);
+
+    tpsField = new TextInput(Integer.toString(tourney.getDesiredTps()), "[1-9][0-9]*");
+    tpsField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Minimum TPS: "), 0, 1);
+    form.add(tpsField, 1, 1);
+
+    roundsPerMeleeField = new TextInput(Long.toString(tourney.getNumMeleeRoundsPerBattle()), "[1-9][0-9]*");
+    roundsPerMeleeField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Rounds Per Melee Battle: "), 2, 0);
+    form.add(roundsPerMeleeField, 3, 0);
+
+    meleeWidthField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldWidth()), "[1-9][0-9]*");
+    meleeWidthField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Melee Battlefield Width: "), 2, 1);
+    form.add(meleeWidthField, 3, 1);
+
+    meleeHeightField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldHeight()), "[1-9][0-9]*");
+    meleeHeightField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Melee Battlefield Height: "), 2, 2);
+    form.add(meleeHeightField, 3, 2);
+
+    maxMeleeSizeField = new TextInput(Integer.toString(tourney.getMaxMeleeSize()), "6|8|10|12|16");
+    maxMeleeSizeField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Max Melee Size (6 - 16): "), 2, 3);
+    form.add(maxMeleeSizeField, 3, 3);
+
+    roundsPerVsField = new TextInput(Long.toString(tourney.getNumVsRoundsPerBattle()), "[1-9][0-9]*");
+    roundsPerVsField.setOnAction(e -> this.createTourney());
+    form.add(new Label("Rounds Per 1v1 Battle: "), 4, 0);
+    form.add(roundsPerVsField, 5, 0);
+
+    vsWidthField = new TextInput(Integer.toString(tourney.getVsBattlefieldWidth()), "[1-9][0-9]*");
+    vsWidthField.setOnAction(e -> this.createTourney());
+    form.add(new Label("1v1 Battlefield Width: "), 4, 1);
+    form.add(vsWidthField, 5, 1);
+
+    vsHeightField = new TextInput(Integer.toString(tourney.getVsBattlefieldHeight()), "[1-9][0-9]*");
+    vsHeightField.setOnAction(e -> this.createTourney());
+    form.add(new Label("1v1 Battlefield Height: "), 4, 2);
+    form.add(vsHeightField, 5, 2);
+
     add(form, 0, 1);
 
     robots.forEach(r -> r.getSelectedProperty().addListener(b -> this.createTourney()));
@@ -71,8 +115,15 @@ public class SettingsPane extends GridPane {
   public void createTourney() {
     tourney.reset(true);
     tourney.setRobots(robots.filtered(Robot::getSelected));
+    tourney.setDesiredRuntimeMillis(UiUtil.hmsToMillis(tourneyTimeField.getText()));
+    tourney.setDesiredTps(Integer.parseInt(tpsField.getText()));
+    tourney.setNumMeleeRoundsPerBattle(Integer.parseInt(roundsPerMeleeField.getText()));
+    tourney.setMeleeBattlefieldWidth(Integer.parseInt(meleeWidthField.getText()));
+    tourney.setMeleeBattlefieldHeight(Integer.parseInt(meleeHeightField.getText()));
     tourney.setMaxMeleeSize(Integer.parseInt(maxMeleeSizeField.getText()));
-    tourney.setDesiredRuntimeMillis(Long.parseLong(tourneyTimeField.getText()) * 1000);
+    tourney.setNumVsRoundsPerBattle(Integer.parseInt(roundsPerVsField.getText()));
+    tourney.setVsBattlefieldWidth(Integer.parseInt(vsWidthField.getText()));
+    tourney.setVsBattlefieldHeight(Integer.parseInt(vsHeightField.getText()));
 
     if (tourney.getRobots().size() < 2) {
       return;
@@ -90,14 +141,6 @@ public class SettingsPane extends GridPane {
     
     createBattles(tourney);
     tourney.setBattle(tourney.getBattles().get(0));
-
-    // Log the entire tournament model
-    try {
-      ObjectMapper om = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-      System.out.println(om.writeValueAsString(tourney));  
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
   }
 
   private void createBattles(Tourney tourney) {

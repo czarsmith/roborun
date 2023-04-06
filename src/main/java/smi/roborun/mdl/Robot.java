@@ -23,14 +23,22 @@ import robocode.control.RobotSpecification;
 public class Robot {
   private StringProperty shortName;
   private StringProperty packageName;
+
+  @JsonIgnore
   private StringProperty shortNameAndRank; // overall rank
+
+  @JsonIgnore
   private StringProperty shortNameAndBattleRank;
+
+  @JsonIgnore
   private BooleanProperty selected;
   private StringProperty author;
   private StringProperty robotName;
   private ObjectProperty<Integer> codeSize;
   private ObjectProperty<Integer> randomSeed;
   private ObjectProperty<RobotScore> totalScore;
+
+  @JsonIgnore
   private ObjectProperty<RobotScore> battleScore;
 
   private RobotSpecification spec;
@@ -157,6 +165,14 @@ public class Robot {
     return author;
   }
 
+  public String getAuthor() {
+    return author.get();
+  }
+
+  public void setAuthor(String author) {
+    this.author.set(author);
+  }
+  
   @JsonIgnore
   public StringProperty getRobotNameProperty() {
     return robotName;

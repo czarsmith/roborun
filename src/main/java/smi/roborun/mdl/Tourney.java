@@ -33,6 +33,7 @@ public class Tourney {
   private ObservableList<Battle> battles;
 
   /** The current battle.  This is always non-null whenever there is at least one battle defined. */
+  @JsonIgnore
   private ObjectProperty<Battle> battle;
 
   public Tourney() {
@@ -60,8 +61,8 @@ public class Tourney {
       vsBattlefieldWidth = 600;
       vsBattlefieldHeight = 600;
       desiredTps = 25;
-      numMeleeRoundsPerBattle = 10;
-      numVsRoundsPerBattle = 10;
+      numMeleeRoundsPerBattle = 5;
+      numVsRoundsPerBattle = 5;
       battles.clear();
       robots.clear();
       battle.set(null);

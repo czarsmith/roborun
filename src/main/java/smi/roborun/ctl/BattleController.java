@@ -54,6 +54,8 @@ import smi.roborun.mdl.RobotScore;
 import smi.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
+  private static final int BATTLEFIELD_MARGIN = 4;
+  
   private RobocodeEngine engine;
   private JSlider tpsSlider;
   private List<Integer> tpsTicks;
@@ -71,9 +73,10 @@ public class BattleController extends BattleAdaptor {
   private long maxSpeed;
   private double maxRate;
 
-  public BattleController(Stage stage, Tourney tourney) {
+  public BattleController(Stage stage, Tourney tourney, String robocodeHomePath) {
     this.stage = stage;
     this.tourney = tourney;
+    robocodeDir = new File(robocodeHomePath);    
     ses = Executors.newSingleThreadScheduledExecutor();
 
     // The TPS slider isn't linear so we have to configure each of the individual tick marks
@@ -84,8 +87,6 @@ public class BattleController extends BattleAdaptor {
     tpsTicks.addAll(List.of(53, 56, 59, 62, 65, 70, 75, 80, 85, 90, 95, 100));
     tpsTicks.addAll(List.of(110, 130, 150, 200, 300, 500, 750, 1000, Integer.MAX_VALUE));
 
-    robocodeDir = new File("/home/czarsmith/robocode");
-    
     RobocodeEngine.setLogMessagesEnabled(false);
     engine = new RobocodeEngine(robocodeDir);
     engine.addBattleListener(this);
@@ -165,7 +166,7 @@ public class BattleController extends BattleAdaptor {
       config.setTps(battle.getTps());
       config.setVisibleGround(false);
       config.setVisibleScanArcs(false);
-      config.setWindowSize(0, 0, 40 + battle.getBattlefieldWidth(), 40 + battle.getBattlefieldHeight());
+      config.setWindowSize(0, 0, BATTLEFIELD_MARGIN + battle.getBattlefieldWidth(), BATTLEFIELD_MARGIN + battle.getBattlefieldHeight());
       config.setShowResults(false);
       config.apply();
 
@@ -176,6 +177,7 @@ public class BattleController extends BattleAdaptor {
       BattleSpecification battleSpec = new BattleSpecification(battle.getNumRounds(), battlefield, selectedRobots);
 
       engine.setVisible(true);
+      robocodeWin.setSize(BATTLEFIELD_MARGIN + battle.getBattlefieldWidth(), BATTLEFIELD_MARGIN + battle.getBattlefieldHeight());
       engine.runBattle(battleSpec, true);
       engine.setVisible(false);
     }

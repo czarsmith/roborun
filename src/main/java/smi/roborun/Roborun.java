@@ -1,5 +1,7 @@
 package smi.roborun;
 
+import java.util.List;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -34,8 +36,11 @@ public class Roborun extends Application {
 
   @Override
   public void start(Stage stage) {
+    List<String> args = getParameters().getRaw();
+    String robocodeDir = getArg(args, "--robocode-dir");
+    
     Tourney tourney = new Tourney();
-    ctl = new BattleController(stage, tourney);
+    ctl = new BattleController(stage, tourney, robocodeDir);
 
     Label appName = new Label("Roborun");
     appName.setFont(new Font("Arial", 24));
@@ -44,7 +49,7 @@ public class Roborun extends Application {
     title.setFont(new Font("Arial", 24));
 
     settingsPane = new SettingsPane(ctl, tourney);
-    battleBoard = new BattleBoard(ctl, tourney);
+    battleBoard = new BattleBoard(ctl, tourney, robocodeDir);
     MeleePane meleePane = new MeleePane(ctl);
     VsPane vsPane = new VsPane(ctl);
     centerPane = new CardPane(settingsPane, battleBoard, meleePane, vsPane);
@@ -89,7 +94,17 @@ public class Roborun extends Application {
     centerPane.show(node);
   }
 
+  private String getArg(List<String> args, String key) {
+    String value = null;
+    for (int i = 0; i < args.size(); i++) {
+      if (key.equals(args.get(i)) && args.size() > i) {
+        value = args.get(++i);
+      }
+    }
+    return value;
+  }
+
   public static void main(String[] args) {
-    launch();
+    launch(args);
   }
 }

@@ -13,3 +13,7 @@
 .label {
   -fx-text-fill: #FFFFFF;
 }
+
+.text-field.invalid {
+  -fx-border-color: red;
+}
