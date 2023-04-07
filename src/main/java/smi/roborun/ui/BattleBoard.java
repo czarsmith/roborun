@@ -14,6 +14,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -62,9 +63,11 @@ public class BattleBoard extends GridPane implements TitledNode {
     Button playBtn = new SvgButton("/icons/play-solid.svg", e -> startTourney());
     Button resetBtn = new SvgButton("/icons/rotate-right-solid.svg", e -> reset());
     playClock = new PlayClock();
+    playClock.setPrefWidth(200);
+    playClock.setAlignment(Pos.CENTER_RIGHT);
     playClock.setFont(new Font("Arial", 24));
     ToolBar toolBar = new ToolBar();
-    toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace(16), playClock, UiUtil.hspace());
+    toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace(), playClock, UiUtil.hspace(16));
     Pane robocodePlaceholder = new Pane();
     VBox centerPane = new VBox(toolBar, robocodePlaceholder);
     VBox.setVgrow(robocodePlaceholder, Priority.ALWAYS);
@@ -276,8 +279,8 @@ public class BattleBoard extends GridPane implements TitledNode {
   }
 
   private void pregame() {
-    playClock.start(tourney.getPregameDelayMillis(), e -> {
-      playClock.start(tourney.getBattle().getDesiredRuntimeMillis(), null);
+    playClock.start("Preview", tourney.getPregameDelayMillis(), e -> {
+      playClock.start("Battle", tourney.getBattle().getDesiredRuntimeMillis(), null);
       new Thread(new BattleThread()).start();
     });
   }
@@ -360,7 +363,7 @@ public class BattleBoard extends GridPane implements TitledNode {
       sortNowPlaying();
       updateUpNext();
 
-      playClock.start(tourney.getPostgameDelayMillis(), e2 -> {
+      playClock.start("Wrap Up", tourney.getPostgameDelayMillis(), e2 -> {
         tourney.getBattle().getRobots().forEach(r -> r.getBattleScore().reset(false));
         tourney.setBattle(nextBattle);
         updateTitle();

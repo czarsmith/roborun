@@ -19,10 +19,9 @@ import javafx.stage.StageStyle;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.BattleBoard;
-import smi.roborun.ui.MeleePane;
+import smi.roborun.ui.ResultsPane;
 import smi.roborun.ui.SettingsPane;
 import smi.roborun.ui.TitledNode;
-import smi.roborun.ui.VsPane;
 import smi.roborun.ui.widgets.CardPane;
 import smi.roborun.ui.widgets.SvgButton;
 import smi.roborun.ui.widgets.UiUtil;
@@ -50,9 +49,8 @@ public class Roborun extends Application {
 
     settingsPane = new SettingsPane(ctl, tourney);
     battleBoard = new BattleBoard(ctl, tourney, robocodeDir);
-    MeleePane meleePane = new MeleePane(ctl);
-    VsPane vsPane = new VsPane(ctl);
-    centerPane = new CardPane(settingsPane, battleBoard, meleePane, vsPane);
+    ResultsPane resultsPane = new ResultsPane(tourney);
+    centerPane = new CardPane(settingsPane, battleBoard, resultsPane);
 
     Button closeBtn = new SvgButton("/icons/square-xmark-solid.svg", e -> {
       Platform.exit(); // For JavaFx
@@ -60,13 +58,12 @@ public class Roborun extends Application {
     });
     Button startBtn = new SvgButton("/icons/play-solid.svg", e -> show("Battle Board", battleBoard));
     Button settingsBtn = new SvgButton("/icons/gear-solid.svg", e -> show("Settings", settingsPane));
-    Button meleeBtn = new SvgButton("/icons/people-group-solid.svg", e -> show("Melee Bracket", meleePane));
-    Button vsBtn = new SvgButton("/icons/people-arrows-solid.svg", e -> show("1v1 Bracket", vsPane));
+    Button resultsBtn = new SvgButton("/icons/people-group-solid.svg", e -> show("Results", resultsPane));
 
     ToolBar toolBar = new ToolBar();
     Pane titlePane = new Pane(title);
     toolBar.getItems().addAll(appName, titlePane, UiUtil.hspace(),
-      startBtn, settingsBtn, meleeBtn, vsBtn, UiUtil.hspace(16), closeBtn);
+      settingsBtn, startBtn, resultsBtn, UiUtil.hspace(16), closeBtn);
 
     BorderPane borderPane = new BorderPane();
     borderPane.setTop(toolBar);

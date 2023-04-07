@@ -15,10 +15,11 @@ import javafx.util.Duration;
 public class PlayClock extends Label {
   private LongProperty time;
   private Timeline timer;
+  private String label;
 
   public PlayClock() {
     time = new SimpleLongProperty();
-    textProperty().bind(Bindings.createStringBinding(() -> UiUtil.millisToMS(time.get(), true), time));
+    textProperty().bind(Bindings.createStringBinding(() -> label + ": " + UiUtil.millisToMS(time.get(), true), time));
   }
 
   public void reset(long millis) {
@@ -26,7 +27,8 @@ public class PlayClock extends Label {
     time.set(millis);
   }
 
-  public void start(long millis, EventHandler<ActionEvent> onFinished) {
+  public void start(String label, long millis, EventHandler<ActionEvent> onFinished) {
+    this.label = label;
     reset(millis);
     timer = new Timeline(new KeyFrame(Duration.millis(millis), new KeyValue(time, 0, Interpolator.LINEAR)));
     if (onFinished != null) {
