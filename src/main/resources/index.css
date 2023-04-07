@@ -14,6 +14,19 @@
   -fx-text-fill: #FFFFFF;
 }
 
+.scroll-pane > .viewport {
+  -fx-background-color: transparent;
+}
+
+.scroll-pane {
+  -fx-pannable: true;
+  -fx-hbar-policy: 'never';
+  -fx-vbar-policy: 'never';
+  -fx-background-color: #222222;
+  -fx-cursor: 'move';
+}
+
 .text-field.invalid {
   -fx-border-color: red;
+  -fx-background-color: #FF9999;
 }

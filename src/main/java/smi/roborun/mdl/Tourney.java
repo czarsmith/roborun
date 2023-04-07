@@ -54,12 +54,12 @@ public class Tourney {
     battles.forEach(battle -> battle.reset(hard));
     
     if (hard) {
-      desiredRuntimeMillis = 30000L;
-      maxMeleeSize = 4;
+      desiredRuntimeMillis = 60000L;
+      maxMeleeSize = 6;
       meleeBattlefieldWidth = 800;
       meleeBattlefieldHeight = 800;
-      vsBattlefieldWidth = 600;
-      vsBattlefieldHeight = 600;
+      vsBattlefieldWidth = 800;
+      vsBattlefieldHeight = 800;
       desiredTps = 25;
       numMeleeRoundsPerBattle = 5;
       numVsRoundsPerBattle = 5;

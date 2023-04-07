@@ -61,6 +61,11 @@ public class RobotCard extends GridPane {
     battleScoreLabel.setFont(new Font("Arial", 14));
     add(fieldNameLabel("Battle Score: "), 0, 4);
     add(battleScoreLabel, 1, 4);
+
+    Label codeSizeLabel = new Label(Integer.toString(robot.getCodeSize()));
+    codeSizeLabel.setFont(new Font("Arial", 14));
+    add(fieldNameLabel("Weight: "), 0, 5);
+    add(codeSizeLabel, 1, 5);
   }
 
   private Label fieldNameLabel(String text) {

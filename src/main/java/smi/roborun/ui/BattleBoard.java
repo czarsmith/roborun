@@ -16,6 +16,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
@@ -33,6 +34,7 @@ import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.Tourney;
+import smi.roborun.ui.widgets.PlayClock;
 import smi.roborun.ui.widgets.SvgButton;
 import smi.roborun.ui.widgets.UiUtil;
 
@@ -43,6 +45,7 @@ public class BattleBoard extends GridPane implements TitledNode {
   private FlowPane upNextTiles;
   private StringProperty title;
   private String robocodeDir;
+  private PlayClock playClock;
 
   public BattleBoard(BattleController ctl, Tourney tourney, String robocodeDir) {
     this.ctl = ctl;
@@ -58,8 +61,10 @@ public class BattleBoard extends GridPane implements TitledNode {
     // Center Pane
     Button playBtn = new SvgButton("/icons/play-solid.svg", e -> startTourney());
     Button resetBtn = new SvgButton("/icons/rotate-right-solid.svg", e -> reset());
+    playClock = new PlayClock();
+    playClock.setFont(new Font("Arial", 24));
     ToolBar toolBar = new ToolBar();
-    toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace());
+    toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace(16), playClock, UiUtil.hspace());
     Pane robocodePlaceholder = new Pane();
     VBox centerPane = new VBox(toolBar, robocodePlaceholder);
     VBox.setVgrow(robocodePlaceholder, Priority.ALWAYS);
@@ -70,10 +75,12 @@ public class BattleBoard extends GridPane implements TitledNode {
     nowPlayingTitle.setUnderline(true);
 
     nowPlayingCards = new FlowPane();
+    ScrollPane nowPlayingScrollPane = new ScrollPane();
+    nowPlayingScrollPane.setContent(nowPlayingCards);
 
     GridPane nowPlaying = new GridPane();
     nowPlaying.add(nowPlayingTitle, 0, 0);
-    nowPlaying.add(nowPlayingCards, 0, 1);
+    nowPlaying.add(nowPlayingScrollPane, 0, 1);
     ColumnConstraints cc1 = new ColumnConstraints();
     cc1.setHalignment(HPos.CENTER);
     nowPlaying.getColumnConstraints().add(cc1);
@@ -250,6 +257,7 @@ public class BattleBoard extends GridPane implements TitledNode {
   private void runBattle() {
     if (tourney.getBattle() != null) {
       applyTiming(); // Adjust timing before each battle
+      playClock.start(tourney.getBattle().getDesiredRuntimeMillis());
       new Thread(new TourneyThread()).start();
     }
   }
@@ -305,6 +313,7 @@ public class BattleBoard extends GridPane implements TitledNode {
 
   private void onBattleFinished(BattleEvent e) {
     Battle battle = e.getBattle();
+    playClock.reset(0);
     System.out.println("FINSHED Round " + battle.getRoundNumber() + " Battle " + battle.getBattleNumber());
 
     Battle nextBattle = getNextBattle();

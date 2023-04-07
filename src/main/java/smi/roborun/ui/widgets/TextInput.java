@@ -10,10 +10,12 @@ public class TextInput extends TextField implements ChangeListener<String> {
   private static final String INVALID_CLS = "invalid";
 
   private Pattern pattern;
+  private ChangeListener<String> otherListener;
 
-  public TextInput(String value, String pattern) {
+  public TextInput(String value, String pattern, ChangeListener<String> otherListener) {
     super(value);
     this.pattern = Pattern.compile(pattern);
+    this.otherListener = otherListener;
     textProperty().addListener(this);
   }
 
@@ -24,6 +26,9 @@ public class TextInput extends TextField implements ChangeListener<String> {
       getStyleClass().add(INVALID_CLS);
     } else if (valid && getStyleClass().contains(INVALID_CLS)) {
       getStyleClass().remove(INVALID_CLS);
+    }
+    if (valid) {
+      otherListener.changed(observable, oldValue, newValue);
     }
   }
 

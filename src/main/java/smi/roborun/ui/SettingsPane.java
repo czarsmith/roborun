@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -57,59 +58,53 @@ public class SettingsPane extends GridPane {
     robotGrid.getSortOrder().add(robotGrid.getColumns().get(2));
     add(robotGrid, 0, 0);
 
+    ChangeListener<String> cl = (a, b, c) -> createTourney();
+
     GridPane form = new GridPane();
     form.setPadding(new Insets(16));
     form.setHgap(16);
     form.setVgap(16);
 
-    tourneyTimeField = new TextInput(UiUtil.millisToHMS(tourney.getDesiredRuntimeMillis()), "[0-9][0-9]:[0-9][0-9]:[0-9][0-9]");
-    tourneyTimeField.setOnAction(e -> this.createTourney());
+    tourneyTimeField = new TextInput(UiUtil.millisToHMS(tourney.getDesiredRuntimeMillis()),
+      "[0-9][0-9]:[0-9][0-9]:[0-9][0-9]", cl);
     form.add(new Label("Tournament Duration (HH:MM:SS): "), 0, 0);
     form.add(tourneyTimeField, 1, 0);
 
-    tpsField = new TextInput(Integer.toString(tourney.getDesiredTps()), "[1-9][0-9]*");
-    tpsField.setOnAction(e -> this.createTourney());
+    tpsField = new TextInput(Integer.toString(tourney.getDesiredTps()), "[1-9][0-9]*", cl);
     form.add(new Label("Minimum TPS: "), 0, 1);
     form.add(tpsField, 1, 1);
 
-    roundsPerMeleeField = new TextInput(Long.toString(tourney.getNumMeleeRoundsPerBattle()), "[1-9][0-9]*");
-    roundsPerMeleeField.setOnAction(e -> this.createTourney());
+    roundsPerMeleeField = new TextInput(Long.toString(tourney.getNumMeleeRoundsPerBattle()), "[1-9][0-9]*", cl);
     form.add(new Label("Rounds Per Melee Battle: "), 2, 0);
     form.add(roundsPerMeleeField, 3, 0);
 
-    meleeWidthField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldWidth()), "[1-9][0-9]*");
-    meleeWidthField.setOnAction(e -> this.createTourney());
+    meleeWidthField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldWidth()), "[1-9][0-9]*", cl);
     form.add(new Label("Melee Battlefield Width: "), 2, 1);
     form.add(meleeWidthField, 3, 1);
 
-    meleeHeightField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldHeight()), "[1-9][0-9]*");
-    meleeHeightField.setOnAction(e -> this.createTourney());
+    meleeHeightField = new TextInput(Integer.toString(tourney.getMeleeBattlefieldHeight()), "[1-9][0-9]*", cl);
     form.add(new Label("Melee Battlefield Height: "), 2, 2);
     form.add(meleeHeightField, 3, 2);
 
-    maxMeleeSizeField = new TextInput(Integer.toString(tourney.getMaxMeleeSize()), "6|8|10|12|16");
-    maxMeleeSizeField.setOnAction(e -> this.createTourney());
+    maxMeleeSizeField = new TextInput(Integer.toString(tourney.getMaxMeleeSize()), "6|8|10|12|16", cl);
     form.add(new Label("Max Melee Size (6 - 16): "), 2, 3);
     form.add(maxMeleeSizeField, 3, 3);
 
-    roundsPerVsField = new TextInput(Long.toString(tourney.getNumVsRoundsPerBattle()), "[1-9][0-9]*");
-    roundsPerVsField.setOnAction(e -> this.createTourney());
+    roundsPerVsField = new TextInput(Long.toString(tourney.getNumVsRoundsPerBattle()), "[1-9][0-9]*", cl);
     form.add(new Label("Rounds Per 1v1 Battle: "), 4, 0);
     form.add(roundsPerVsField, 5, 0);
 
-    vsWidthField = new TextInput(Integer.toString(tourney.getVsBattlefieldWidth()), "[1-9][0-9]*");
-    vsWidthField.setOnAction(e -> this.createTourney());
+    vsWidthField = new TextInput(Integer.toString(tourney.getVsBattlefieldWidth()), "[1-9][0-9]*", cl);
     form.add(new Label("1v1 Battlefield Width: "), 4, 1);
     form.add(vsWidthField, 5, 1);
 
-    vsHeightField = new TextInput(Integer.toString(tourney.getVsBattlefieldHeight()), "[1-9][0-9]*");
-    vsHeightField.setOnAction(e -> this.createTourney());
+    vsHeightField = new TextInput(Integer.toString(tourney.getVsBattlefieldHeight()), "[1-9][0-9]*", cl);
     form.add(new Label("1v1 Battlefield Height: "), 4, 2);
     form.add(vsHeightField, 5, 2);
 
     add(form, 0, 1);
 
-    robots.forEach(r -> r.getSelectedProperty().addListener(b -> this.createTourney()));
+    robots.forEach(r -> r.getSelectedProperty().addListener(b -> createTourney()));
   }
 
   public void createTourney() {

@@ -41,6 +41,12 @@ public class UiUtil {
     new Alert(AlertType.ERROR, message).showAndWait();
   }
 
+  public static String millisToMS(long millis) {
+    long minutes = millis / 60000;
+    long seconds = millis % 60000 / 1000;
+    return String.format("%02d:%02d", minutes, seconds);
+  }
+
   public static String millisToHMS(long millis) {
     long hours = millis / 3600000;
     long minutes = millis % 3600000 / 60000;
