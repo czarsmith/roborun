@@ -7,6 +7,8 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
 
@@ -24,9 +26,12 @@ public class PlayClock extends Label {
     time.set(millis);
   }
 
-  public void start(long millis) {
+  public void start(long millis, EventHandler<ActionEvent> onFinished) {
     reset(millis);
     timer = new Timeline(new KeyFrame(Duration.millis(millis), new KeyValue(time, 0, Interpolator.LINEAR)));
+    if (onFinished != null) {
+      timer.setOnFinished(onFinished);
+    }
     timer.play();
   }
 

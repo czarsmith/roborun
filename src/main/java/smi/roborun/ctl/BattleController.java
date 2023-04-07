@@ -235,7 +235,6 @@ public class BattleController extends BattleAdaptor {
     maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
-      battle.getRobots().forEach(r -> r.getBattleScore().reset(false));
       battle.getResults().addAll(Arrays.asList(e.getSortedResults()));
       stage.fireEvent(BattleEvent.finished(tourney, battle));
     });

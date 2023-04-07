@@ -30,6 +30,8 @@ public class Tourney {
   private Integer numVsRoundsPerBattle;
   private Integer vsBattlefieldWidth;
   private Integer vsBattlefieldHeight;
+  private Long pregameDelayMillis;
+  private Long postgameDelayMillis;
   private ObservableList<Battle> battles;
 
   /** The current battle.  This is always non-null whenever there is at least one battle defined. */
@@ -63,6 +65,8 @@ public class Tourney {
       desiredTps = 25;
       numMeleeRoundsPerBattle = 5;
       numVsRoundsPerBattle = 5;
+      pregameDelayMillis = 5000L;
+      postgameDelayMillis = 5000L;
       battles.clear();
       robots.clear();
       battle.set(null);
@@ -191,5 +195,21 @@ public class Tourney {
 
   public void setBattle(Battle battle) {
     this.battle.set(battle);
+  }
+
+  public Long getPregameDelayMillis() {
+    return pregameDelayMillis;
+  }
+
+  public void setPregameDelayMillis(Long pregameDelayMillis) {
+    this.pregameDelayMillis = pregameDelayMillis;
+  }
+
+  public Long getPostgameDelayMillis() {
+    return postgameDelayMillis;
+  }
+
+  public void setPostgameDelayMillis(Long postgameDelayMillis) {
+    this.postgameDelayMillis = postgameDelayMillis;
   }  
 }

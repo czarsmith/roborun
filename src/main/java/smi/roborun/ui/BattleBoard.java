@@ -173,7 +173,29 @@ public class BattleBoard extends GridPane implements TitledNode {
       return;
     }
 
-    // Up Next
+    updateUpNext();
+    updateNowPlaying();
+  }
+
+  private void updateNowPlaying() {
+    nowPlayingCards.getChildren().clear();
+    if (tourney.getBattle() != null) {
+      tourney.getBattle().getRobots().stream().map(RobotCard::new).forEach(card -> {
+        FlowPane.setMargin(card, new Insets(4));
+        nowPlayingCards.getChildren().add(card);
+      });
+      sortNowPlaying();
+    }
+  }
+
+  private void sortNowPlaying() {
+    nowPlayingCards.getChildren().stream().sorted(
+      Comparator.comparing(card -> ((RobotCard)card).getRobot().getBattleScore().getScore())
+        .thenComparing(card -> ((RobotCard)card).getRobot().getRobotName()))
+    .forEach(n -> n.toBack());
+  }
+
+  private void updateUpNext() {
     upNextTiles.getChildren().clear();
     if (tourney.getBattle() != null) {
       int currBattleIdx = tourney.getBattles().indexOf(tourney.getBattle());
@@ -183,22 +205,12 @@ public class BattleBoard extends GridPane implements TitledNode {
           FlowPane.setMargin(tile, new Insets(4));
           upNextTiles.getChildren().add(tile);
         });
-        // Add placeholders for robots who's identity we don't yet know.  TODO: fix this
         IntStream.range(0, nextBattle.getNumRobots() - nextBattle.getRobots().size())
             .mapToObj(i -> new RobotTile()).forEach(tile -> {
           FlowPane.setMargin(tile, new Insets(4));
           upNextTiles.getChildren().add(tile);
         });
       }
-    }
-
-    // Now Playing
-    nowPlayingCards.getChildren().clear();
-    if (tourney.getBattle() != null) {
-      tourney.getBattle().getRobots().stream().map(RobotCard::new).forEach(card -> {
-        FlowPane.setMargin(card, new Insets(4));
-        nowPlayingCards.getChildren().add(card);
-      });
     }
   }
 
@@ -244,22 +256,30 @@ public class BattleBoard extends GridPane implements TitledNode {
   }
 
   private void applyTiming() {
-    long remainingTourneyTime = tourney.getDesiredRuntimeMillis() - (System.currentTimeMillis() - tourney.getStartTime());
-    System.out.println("Remaining Time: " + remainingTourneyTime);
     List<Battle> remainingBattles = tourney.getBattles().stream()
       .filter(battle -> battle.getResults().isEmpty()).collect(Collectors.toList());
+    long prePostTimeRemaining = remainingBattles.size() * tourney.getPregameDelayMillis()
+      + remainingBattles.size() * tourney.getPostgameDelayMillis() - tourney.getPostgameDelayMillis();
+    long remainingTourneyTime = tourney.getDesiredRuntimeMillis() - (System.currentTimeMillis() - tourney.getStartTime());
+    System.out.println("Remaining Time: " + remainingTourneyTime);
     System.out.println("Remaining Battles: " + remainingBattles.size());    
-    long battleMillis = remainingTourneyTime / remainingBattles.size();
-    System.out.println("Remaining Battle Millis: " + battleMillis);    
+    long battleMillis = Math.max(0, remainingTourneyTime - prePostTimeRemaining) / remainingBattles.size();
+    System.out.println("Remaining Battle Millis: " + battleMillis);
     remainingBattles.forEach(battle -> battle.setDesiredRuntimeMillis(battleMillis));
   }
 
   private void runBattle() {
     if (tourney.getBattle() != null) {
       applyTiming(); // Adjust timing before each battle
-      playClock.start(tourney.getBattle().getDesiredRuntimeMillis());
-      new Thread(new BattleThread()).start();
+      pregame();
     }
+  }
+
+  private void pregame() {
+    playClock.start(tourney.getPregameDelayMillis(), e -> {
+      playClock.start(tourney.getBattle().getDesiredRuntimeMillis(), null);
+      new Thread(new BattleThread()).start();
+    });
   }
 
   private void assignRobotsToVsBattles() {
@@ -336,18 +356,21 @@ public class BattleBoard extends GridPane implements TitledNode {
             && b.getType() == battle.getType() && b.getRoundNumber() == battle.getRoundNumber() + 1).findAny().orElse(null);
           advanceToBattle.getRobots().addAll(topFinishers);
       }
-  
-      tourney.setBattle(nextBattle);  
-      updateTitle();
-      runBattle();
+
+      sortNowPlaying();
+      updateUpNext();
+
+      playClock.start(tourney.getPostgameDelayMillis(), e2 -> {
+        tourney.getBattle().getRobots().forEach(r -> r.getBattleScore().reset(false));
+        tourney.setBattle(nextBattle);
+        updateTitle();
+        runBattle();
+      });
     }
   }
 
   private void onTurnFinished(BattleEvent e) {
-    nowPlayingCards.getChildren().stream().sorted(
-        Comparator.comparing(card -> ((RobotCard)card).getRobot().getBattleScore().getScore())
-          .thenComparing(card -> ((RobotCard)card).getRobot().getRobotName()))
-      .forEach(n -> n.toBack());
+    sortNowPlaying();
   }
 
   private void onRoundStarted(BattleEvent e) {
