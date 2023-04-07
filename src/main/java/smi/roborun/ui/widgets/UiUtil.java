@@ -41,10 +41,10 @@ public class UiUtil {
     new Alert(AlertType.ERROR, message).showAndWait();
   }
 
-  public static String millisToMS(long millis) {
+  public static String millisToMS(long millis, boolean down) {
     long minutes = millis / 60000;
-    long seconds = millis % 60000 / 1000;
-    return String.format("%02d:%02d", minutes, seconds);
+    double seconds = millis % 60000 / 1000d;
+    return String.format("%02d:%02d", minutes, (long)(down ? Math.ceil(seconds) : Math.floor(seconds)));
   }
 
   public static String millisToHMS(long millis) {

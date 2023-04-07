@@ -96,8 +96,8 @@ public class BattleController extends BattleAdaptor {
     return Arrays.asList(engine.getLocalRepository());
   }
 
-  public void execute() {
-    this.battle = tourney.getBattle();
+  public void playBattle() {
+    battle = tourney.getBattle();
 
     if (battle.getRoundNumber() == 1 && battle.getBattleNumber() == 1) {
       maxRate = 0;

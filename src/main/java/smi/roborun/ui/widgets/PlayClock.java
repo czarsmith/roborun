@@ -16,7 +16,7 @@ public class PlayClock extends Label {
 
   public PlayClock() {
     time = new SimpleLongProperty();
-    textProperty().bind(Bindings.createStringBinding(() -> UiUtil.millisToMS(time.get()), time));
+    textProperty().bind(Bindings.createStringBinding(() -> UiUtil.millisToMS(time.get(), true), time));
   }
 
   public void reset(long millis) {
@@ -25,12 +25,8 @@ public class PlayClock extends Label {
   }
 
   public void start(long millis) {
-    stop();
-
-    long seconds = millis / 1000 + 1;
-    reset(millis + 1000);
-    
-    timer = new Timeline(new KeyFrame(Duration.seconds(seconds), new KeyValue(time, 0, Interpolator.LINEAR)));
+    reset(millis);
+    timer = new Timeline(new KeyFrame(Duration.millis(millis), new KeyValue(time, 0, Interpolator.LINEAR)));
     timer.play();
   }
 

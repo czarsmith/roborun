@@ -258,7 +258,7 @@ public class BattleBoard extends GridPane implements TitledNode {
     if (tourney.getBattle() != null) {
       applyTiming(); // Adjust timing before each battle
       playClock.start(tourney.getBattle().getDesiredRuntimeMillis());
-      new Thread(new TourneyThread()).start();
+      new Thread(new BattleThread()).start();
     }
   }
 
@@ -303,11 +303,11 @@ public class BattleBoard extends GridPane implements TitledNode {
       .findAny().orElse(null);
   }
 
-  private class TourneyThread implements Runnable {
+  private class BattleThread implements Runnable {
     public void run() {
       System.out.println("STARTED Round " + tourney.getBattle().getRoundNumber()
         + " Battle " + tourney.getBattle().getBattleNumber());
-      ctl.execute();
+      ctl.playBattle();
     }  
   }
 
