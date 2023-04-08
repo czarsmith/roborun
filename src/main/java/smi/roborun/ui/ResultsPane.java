@@ -1,18 +1,18 @@
 package smi.roborun.ui;
 
-import javafx.collections.ListChangeListener;
+import javafx.collections.ListChangeListener.Change;
 import javafx.scene.layout.VBox;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Tourney;
 
-public class ResultsPane extends VBox implements ListChangeListener<Battle> {
+public class ResultsPane extends VBox {
   public ResultsPane(Tourney tourney) {
-    tourney.getBattles().addListener(this);
+    tourney.getBattles().addListener(this::onBattlesChanged);
+    getChildren().add(new RankingsPane(tourney));
   }
 
-  @Override
-  public void onChanged(Change<? extends Battle> c) {
-    getChildren().clear();
-    c.getList().forEach(b -> getChildren().add(new BattleResultsPane(b)));
+  private void onBattlesChanged(Change<? extends Battle> bc) {
+    getChildren().removeIf(c -> c instanceof BattleResultsPane);
+    bc.getList().forEach(b -> getChildren().add(new BattleResultsPane(b)));
   }
 }

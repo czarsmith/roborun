@@ -59,9 +59,13 @@ public class UiUtil {
     Matcher m = p.matcher(hms);
     long millis = 0;
     if (m.matches()) {
-      millis = Integer.parseInt(m.group(1)) * 3600000
-        + Integer.parseInt(m.group(2)) * 60000
-        + Integer.parseInt(m.group(3)) * 1000;
+//      try {
+        millis = Integer.parseInt(m.group(1)) * 3600000
+          + Integer.parseInt(m.group(2)) * 60000
+          + Integer.parseInt(m.group(3)) * 1000;
+//      } catch (NumberFormatException e) {
+//        e.printStackTrace();
+//      }
     }
     return millis;
   }

@@ -11,7 +11,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import robocode.BattleResults;
 
 @JsonInclude(Include.NON_NULL)
 public class Battle {
@@ -38,7 +37,7 @@ public class Battle {
    */
   private IntegerProperty numRobots;
   private List<Robot> robots;
-  private ObservableList<BattleResults> results;
+  private ObservableList<RobotScore> results;
   private Long desiredRuntimeMillis;
 
   /** The robocode battle round, not the tournament round. */
@@ -146,11 +145,11 @@ public class Battle {
     this.robots = robots;
   }
 
-  public ObservableList<BattleResults> getResults() {
+  public ObservableList<RobotScore> getResults() {
     return results;
   }
 
-  public void setResults(List<BattleResults> results) {
+  public void setResults(List<RobotScore> results) {
     this.results.clear();
     this.results.addAll(results);
   }

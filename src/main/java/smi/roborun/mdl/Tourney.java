@@ -1,6 +1,5 @@
 package smi.roborun.mdl;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,8 @@ public class Tourney {
   private LongProperty endTime;
   private Long desiredRuntimeMillis;
   private Integer desiredTps;
-  private Map<String, Robot> robots;
+  private ObservableList<Robot> robots;
+  private Map<String, Robot> robotsMap;
   private Integer maxMeleeSize;
   private Integer numMeleeRoundsPerBattle;
   private Integer meleeBattlefieldWidth;
@@ -41,7 +41,8 @@ public class Tourney {
   public Tourney() {
     startTime = new SimpleLongProperty();
     endTime = new SimpleLongProperty();
-    robots = new HashMap<>();
+    robots = FXCollections.observableArrayList();
+    robotsMap = new HashMap<>();
     battles = FXCollections.observableArrayList();
     battle = new SimpleObjectProperty<>();
 
@@ -52,7 +53,7 @@ public class Tourney {
   public void reset(boolean hard) {
     startTime.set(0L);
     endTime.set(0L);
-    robots.values().forEach(robot -> robot.reset(hard));
+    robots.forEach(robot -> robot.reset(hard));
     battles.forEach(battle -> battle.reset(hard));
     
     if (hard) {
@@ -69,6 +70,7 @@ public class Tourney {
       postgameDelayMillis = 5000L;
       battles.clear();
       robots.clear();
+      robotsMap.clear();
       battle.set(null);
     } else {
       battle.set(battles.isEmpty() ? null : battles.get(0));
@@ -163,16 +165,18 @@ public class Tourney {
 
   @JsonIgnore
   public Robot getRobot(String name) {
-    return robots.get(name);
+    return robotsMap.get(name);
   }
 
-  public Collection<Robot> getRobots() {
-    return robots.values();
+  public ObservableList<Robot> getRobots() {
+    return robots;
   }
 
   public void setRobots(List<Robot> robots) {
     this.robots.clear();
-    robots.forEach(robot -> this.robots.put(robot.getRobotName(), robot));
+    this.robots.addAll(robots);
+    robotsMap.clear();
+    robots.forEach(robot -> robotsMap.put(robot.getRobotName(), robot));
   }
 
   public ObservableList<Battle> getBattles() {

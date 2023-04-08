@@ -28,12 +28,12 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
-import robocode.BattleResults;
 import smi.roborun.ctl.BattleController;
 import smi.roborun.ctl.BattleEvent;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.RobotScore;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.PlayClock;
 import smi.roborun.ui.widgets.SvgButton;
@@ -351,7 +351,7 @@ public class BattleBoard extends GridPane implements TitledNode {
       // Move the winners into their next battle
       if (battle.getAdvanceToBattleNumber() != null) {
         List<Robot> topFinishers = battle.getResults().subList(0, (int)Math.ceil(battle.getResults().size() / 2d)).stream()
-          .map(BattleResults::getTeamLeaderName)
+          .map(RobotScore::getRobotName)
           .map(name -> battle.getRobots().stream().filter(r -> name.equals(r.getRobotName())).findFirst().orElse(null))
           .collect(Collectors.toList());
         Battle advanceToBattle = tourney.getBattles().stream().filter(b ->
