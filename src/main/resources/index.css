@@ -19,10 +19,13 @@
 }
 
 .scroll-pane {
+  -fx-background-color: #222222;
+}
+
+.scroll-pane.now-playing {
   -fx-pannable: true;
   -fx-hbar-policy: 'never';
   -fx-vbar-policy: 'never';
-  -fx-background-color: #222222;
   -fx-cursor: 'move';
 }
 

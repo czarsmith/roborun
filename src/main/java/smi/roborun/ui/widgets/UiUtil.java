@@ -32,10 +32,19 @@ public class UiUtil {
 
   public static <T, F> TableColumn<T, F> tableCol(String title,
       Callback<CellDataFeatures<T, F>, ObservableValue<F>> callback) {
+    return tableCol(title, callback, null);
+  }
+
+  public static <T, F> TableColumn<T, F> tableCol(String title,
+      Callback<CellDataFeatures<T, F>, ObservableValue<F>> callback, Integer prefWidth) {
     TableColumn<T, F> col = new TableColumn<>(title);
     col.setCellValueFactory(callback);
+    if (prefWidth != null) {
+      col.setPrefWidth(prefWidth);
+    }
     return col;
   }
+
 
   public static void error(String message) {
     new Alert(AlertType.ERROR, message).showAndWait();

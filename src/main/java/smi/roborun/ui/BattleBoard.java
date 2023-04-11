@@ -79,6 +79,7 @@ public class BattleBoard extends GridPane implements TitledNode {
 
     nowPlayingCards = new FlowPane();
     ScrollPane nowPlayingScrollPane = new ScrollPane();
+    nowPlayingScrollPane.getStyleClass().add("now-playing");
     nowPlayingScrollPane.setContent(nowPlayingCards);
 
     GridPane nowPlaying = new GridPane();

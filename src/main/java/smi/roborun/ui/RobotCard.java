@@ -1,7 +1,7 @@
 package smi.roborun.ui;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -46,18 +46,16 @@ public class RobotCard extends GridPane {
     add(authorLabel, 0, 2);
     GridPane.setColumnSpan(authorLabel, 2);
 
-    DoubleProperty osp = robot.getTotalScore().getScoreProperty();
-    Label overallScoreLabel = new Label();
-    overallScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
-      Integer.toString((int)osp.get()), osp));
-    overallScoreLabel.setFont(new Font("Arial", 14));
+    IntegerProperty tsp = robot.getTotalScore().getScoreProperty();
+    Label totalScoreLabel = new Label();
+    totalScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> Integer.toString(tsp.get()), tsp));
+    totalScoreLabel.setFont(new Font("Arial", 14));
     add(fieldNameLabel("Overall Score: "), 0, 3);
-    add(overallScoreLabel, 1, 3);
+    add(totalScoreLabel, 1, 3);
 
-    DoubleProperty bsp = robot.getBattleScore().getScoreProperty();
+    IntegerProperty bsp = robot.getBattleScore().getScoreProperty();
     Label battleScoreLabel = new Label();
-    battleScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> 
-      Integer.toString((int)bsp.get()), bsp));
+    battleScoreLabel.textProperty().bind(Bindings.createStringBinding(() -> Integer.toString(bsp.get()), bsp));
     battleScoreLabel.setFont(new Font("Arial", 14));
     add(fieldNameLabel("Battle Score: "), 0, 4);
     add(battleScoreLabel, 1, 4);

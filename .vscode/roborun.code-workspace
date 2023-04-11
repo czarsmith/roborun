@@ -10,6 +10,7 @@
 		"java.import.gradle.java.home": "/home/czarsmith/jdk-19.0.2",
 		"java.import.gradle.wrapper.enabled": false,
 		"java.debug.settings.onBuildFailureProceed": true,
-		"java.debug.settings.showHex": false
+		"java.debug.settings.showHex": false,
+		"java.dependency.packagePresentation": "hierarchical"
 	}
 }

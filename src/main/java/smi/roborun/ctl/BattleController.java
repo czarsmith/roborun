@@ -268,10 +268,20 @@ public class BattleController extends BattleAdaptor {
 
   private void updateScores(BattleResults[] scores) {
     for (int i = 0; i < scores.length; i++) {
+      BattleResults score = scores[i];
       RobotScore battleScore = tourney.getRobot(scores[i].getTeamLeaderName()).getBattleScore();
-      double previousScore = battleScore.getScore();
-      battleScore.setScore(scores[i].getScore());
+      int previousScore = battleScore.getScore();
+      battleScore.setScore(score.getScore());
       battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
+      battleScore.setSurvival(score.getSurvival());
+      battleScore.setLastSurvivorBonus(score.getLastSurvivorBonus());
+      battleScore.setBulletDamage(score.getBulletDamage());
+      battleScore.setBulletDamageBonus(score.getBulletDamageBonus());
+      battleScore.setRamDamage(score.getRamDamage());
+      battleScore.setRamDamageBonus(score.getRamDamageBonus());
+      battleScore.setFirsts(score.getFirsts());
+      battleScore.setSeconds(score.getSeconds());
+      battleScore.setThirds(score.getThirds());
 
       if (!battle.isPreliminary()) {
         RobotScore totalScore = tourney.getRobot(scores[i].getTeamLeaderName()).getTotalScore();
@@ -284,13 +294,13 @@ public class BattleController extends BattleAdaptor {
   private void updateScores(IScoreSnapshot[] scores) {
     for (int i = 0; i < scores.length; i++) {
       RobotScore battleScore = tourney.getRobot(scores[i].getName()).getBattleScore();
-      double previousScore = battleScore.getScore();
-      battleScore.setScore(scores[i].getTotalScore() + scores[i].getCurrentScore());
+      int previousScore = battleScore.getScore();
+      battleScore.setScore((int)(scores[i].getTotalScore() + scores[i].getCurrentScore()));
       battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
 
       if (!battle.isPreliminary()) {
         RobotScore totalScore = tourney.getRobot(scores[i].getName()).getTotalScore();
-        totalScore.setScore(totalScore.getScore() + battleScore.getScore() - previousScore);
+        totalScore.setScore((int)(totalScore.getScore() + battleScore.getScore() - previousScore));
       }
     }
     updateTotalRank();
