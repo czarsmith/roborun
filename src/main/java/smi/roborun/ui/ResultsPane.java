@@ -9,8 +9,10 @@ import smi.roborun.mdl.Tourney;
 
 public class ResultsPane extends ScrollPane {
   private VBox vbox;
+  private Tourney tourney;
 
   public ResultsPane(Tourney tourney) {
+    this.tourney = tourney;
     tourney.getBattles().addListener(this::onBattlesChanged);
 
     setFitToWidth(true);
@@ -26,6 +28,6 @@ public class ResultsPane extends ScrollPane {
 
   private void onBattlesChanged(Change<? extends Battle> bc) {
     vbox.getChildren().removeIf(c -> c instanceof BattleResultsPane);
-    bc.getList().forEach(b -> vbox.getChildren().add(new BattleResultsPane(b)));
+    bc.getList().forEach(b -> vbox.getChildren().add(new BattleResultsPane(tourney, b)));
   }
 }

@@ -270,7 +270,8 @@ public class BattleController extends BattleAdaptor {
     for (int i = 0; i < scores.length; i++) {
       BattleResults score = scores[i];
       RobotScore battleScore = tourney.getRobot(scores[i].getTeamLeaderName()).getBattleScore();
-      int previousScore = battleScore.getScore();
+      RobotScore previousScore = battleScore.copy();
+      battleScore.setRobotName(score.getTeamLeaderName());
       battleScore.setScore(score.getScore());
       battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
       battleScore.setSurvival(score.getSurvival());
@@ -284,8 +285,7 @@ public class BattleController extends BattleAdaptor {
       battleScore.setThirds(score.getThirds());
 
       if (!battle.isPreliminary()) {
-        RobotScore totalScore = tourney.getRobot(scores[i].getTeamLeaderName()).getTotalScore();
-        totalScore.setScore(totalScore.getScore() + battleScore.getScore() - previousScore);  
+        updateTotalScore(battleScore, previousScore);
       }
     }
     updateTotalRank();
@@ -293,17 +293,41 @@ public class BattleController extends BattleAdaptor {
 
   private void updateScores(IScoreSnapshot[] scores) {
     for (int i = 0; i < scores.length; i++) {
+      IScoreSnapshot score = scores[i];
       RobotScore battleScore = tourney.getRobot(scores[i].getName()).getBattleScore();
-      int previousScore = battleScore.getScore();
-      battleScore.setScore((int)(scores[i].getTotalScore() + scores[i].getCurrentScore()));
+      RobotScore previousScore = battleScore.copy();
+      battleScore.setScore((int)(score.getTotalScore() + score.getCurrentScore()));
       battleScore.setRank(battleScore.getScore() == 0 ? 0 : i + 1);
+      battleScore.setRobotName(score.getName());
+      battleScore.setSurvival((int)(score.getTotalSurvivalScore() + score.getCurrentSurvivalScore()));
+      battleScore.setLastSurvivorBonus((int)(score.getTotalLastSurvivorBonus() + score.getCurrentSurvivalBonus()));
+      battleScore.setBulletDamage((int)(score.getTotalBulletDamageScore() + score.getCurrentBulletDamageScore()));
+      battleScore.setBulletDamageBonus((int)(score.getTotalBulletKillBonus() + score.getCurrentBulletKillBonus()));
+      battleScore.setRamDamage((int)(score.getTotalRammingDamageScore() + score.getCurrentRammingDamageScore()));
+      battleScore.setRamDamageBonus((int)(score.getTotalRammingKillBonus() + score.getCurrentRammingKillBonus()));
+      battleScore.setFirsts(score.getTotalFirsts());
+      battleScore.setSeconds(score.getTotalSeconds());
+      battleScore.setThirds(score.getTotalThirds());
 
       if (!battle.isPreliminary()) {
-        RobotScore totalScore = tourney.getRobot(scores[i].getName()).getTotalScore();
-        totalScore.setScore((int)(totalScore.getScore() + battleScore.getScore() - previousScore));
+        updateTotalScore(battleScore, previousScore);
       }
     }
     updateTotalRank();
+  }
+
+  private void updateTotalScore(RobotScore battleScore, RobotScore previousScore) {
+    RobotScore totalScore = tourney.getRobot(battleScore.getRobotName()).getTotalScore();
+    totalScore.setScore(totalScore.getScore() + battleScore.getScore() - previousScore.getScore());
+    totalScore.setSurvival(totalScore.getSurvival() + battleScore.getSurvival() - previousScore.getSurvival());
+    totalScore.setLastSurvivorBonus(totalScore.getLastSurvivorBonus() + battleScore.getLastSurvivorBonus() - previousScore.getLastSurvivorBonus());
+    totalScore.setBulletDamage(totalScore.getBulletDamage() + battleScore.getBulletDamage() - previousScore.getBulletDamage());
+    totalScore.setBulletDamageBonus(totalScore.getBulletDamageBonus() + battleScore.getBulletDamageBonus() - previousScore.getBulletDamageBonus());
+    totalScore.setRamDamage(totalScore.getRamDamage() + battleScore.getRamDamage() - previousScore.getRamDamage());
+    totalScore.setRamDamageBonus(totalScore.getRamDamageBonus() + battleScore.getRamDamageBonus() - previousScore.getRamDamageBonus());
+    totalScore.setFirsts(totalScore.getFirsts() + battleScore.getFirsts() - previousScore.getFirsts());
+    totalScore.setSeconds(totalScore.getSeconds() + battleScore.getSeconds() - previousScore.getSeconds());
+    totalScore.setThirds(totalScore.getThirds() + battleScore.getThirds() - previousScore.getThirds());
   }
 
   private void updateTotalRank() {

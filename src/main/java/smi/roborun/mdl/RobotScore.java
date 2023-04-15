@@ -73,6 +73,15 @@ public class RobotScore {
     ret.setAuthor(getAuthor());
     ret.setRank(getRank());
     ret.setScore(getScore());
+    ret.setBulletDamage(getBulletDamage());
+    ret.setBulletDamageBonus(getBulletDamageBonus());
+    ret.setFirsts(getFirsts());
+    ret.setLastSurvivorBonus(getLastSurvivorBonus());
+    ret.setRamDamage(getRamDamage());
+    ret.setRamDamageBonus(getRamDamageBonus());
+    ret.setSeconds(getSeconds());
+    ret.setSurvival(getSurvival());
+    ret.setThirds(getThirds());
     return ret;
   }
 
