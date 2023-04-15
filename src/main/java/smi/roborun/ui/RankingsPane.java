@@ -1,12 +1,19 @@
 package smi.roborun.ui;
 
+import java.util.Comparator;
+
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.util.Callback;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
@@ -39,8 +46,15 @@ public class RankingsPane extends VBox {
     // Table sorting
     grid.getColumns().get(0).setSortType(TableColumn.SortType.ASCENDING);
     grid.getSortOrder().add(grid.getColumns().get(0));
-    SortedList<Robot> sortedRobots = new SortedList<>(tourney.getRobots());
-		sortedRobots.comparatorProperty().bind(grid.comparatorProperty());
+    Callback<Robot, Observable[]> cb = r -> new Observable[] { r.getTotalScore().getRankProperty() };
+    ObservableList<Robot> observableRobots = FXCollections.observableArrayList(cb);
+    observableRobots.addAll(tourney.getRobots());
+    SortedList<Robot> sortedRobots = new SortedList<>(observableRobots,
+      Comparator.comparing(r -> r.getTotalScore().getRank()));
+    tourney.getRobots().addListener((ListChangeListener<? super Robot>)c -> {
+      observableRobots.clear();
+      observableRobots.addAll(tourney.getRobots());
+    });
     grid.setItems(sortedRobots);
 
     // Table size
