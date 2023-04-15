@@ -227,7 +227,9 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onBattleCompleted(BattleCompletedEvent e) {
-    tpsNext.cancel(true);
+    if (tpsNext != null) {
+      tpsNext.cancel(true);
+    }
     tpsMax.cancel(true);
     battle.setEndTime(System.currentTimeMillis());
     
@@ -236,7 +238,8 @@ public class BattleController extends BattleAdaptor {
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
       battle.getResults().addAll(battle.getRobots().stream().map(Robot::getBattleScore)
-        .map(RobotScore::copy).sorted(Comparator.comparing(RobotScore::getRank)).collect(Collectors.toList()));
+        .map(RobotScore::copy).sorted(Comparator.comparing(RobotScore::getScore, Comparator.reverseOrder()))
+        .collect(Collectors.toList()));
       stage.fireEvent(BattleEvent.finished(tourney, battle));
     });
   }

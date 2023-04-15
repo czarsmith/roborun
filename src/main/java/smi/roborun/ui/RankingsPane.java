@@ -13,7 +13,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.util.Callback;
 import smi.roborun.mdl.Robot;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.UiUtil;
@@ -32,8 +31,8 @@ public class RankingsPane extends VBox {
     grid.getColumns().add(UiUtil.<Robot, String>tableCol("Robot", c -> c.getValue().getShortNameProperty(), 150));
     grid.getColumns().add(UiUtil.<Robot, String>tableCol("Author", c -> c.getValue().getAuthorProperty(), 150));
     grid.getColumns().add(UiUtil.<Robot, Integer>tableCol("Weight", c -> c.getValue().getCodeSizeProperty(), 60));
-    grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Score", c -> c.getValue().getTotalScore().getScoreProperty(), 50));
-    grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Survival", c -> c.getValue().getTotalScore().getSurvivalProperty(), 50));
+    grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Score", c -> c.getValue().getTotalScore().getScoreProperty(), 70));
+    grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Survival", c -> c.getValue().getTotalScore().getSurvivalProperty(), 70));
     grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Surv Bonus", c -> c.getValue().getTotalScore().getLastSurvivorBonusProperty(), 50));
     grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Bullet Dmg", c -> c.getValue().getTotalScore().getBulletDamageProperty(), 50));
     grid.getColumns().add(UiUtil.<Robot, Number>tableCol("Bullet Bonus", c -> c.getValue().getTotalScore().getBulletDamageBonusProperty(), 50));
@@ -44,13 +43,11 @@ public class RankingsPane extends VBox {
     grid.getColumns().add(UiUtil.<Robot, Number>tableCol("3rds", c -> c.getValue().getTotalScore().getThirdsProperty(), 50));
     
     // Table sorting
-    grid.getColumns().get(0).setSortType(TableColumn.SortType.ASCENDING);
-    grid.getSortOrder().add(grid.getColumns().get(0));
-    Callback<Robot, Observable[]> cb = r -> new Observable[] { r.getTotalScore().getRankProperty() };
-    ObservableList<Robot> observableRobots = FXCollections.observableArrayList(cb);
+    ObservableList<Robot> observableRobots = FXCollections.observableArrayList(
+      r -> new Observable[] { r.getTotalScore().getScoreProperty() });
     observableRobots.addAll(tourney.getRobots());
     SortedList<Robot> sortedRobots = new SortedList<>(observableRobots,
-      Comparator.comparing(r -> r.getTotalScore().getRank()));
+      Comparator.comparing(r -> r.getTotalScore().getScore(), Comparator.reverseOrder()));
     tourney.getRobots().addListener((ListChangeListener<? super Robot>)c -> {
       observableRobots.clear();
       observableRobots.addAll(tourney.getRobots());
