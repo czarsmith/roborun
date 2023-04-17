@@ -19,13 +19,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToolBar;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
 import smi.roborun.ctl.BattleController;
@@ -98,19 +104,13 @@ public class BattleBoard extends GridPane implements TitledNode {
     bracketTitle.setFont(new Font("Arial", 24));
     bracketTitle.setUnderline(true);
 
-    FlowPane bracketGui = new FlowPane(new Label("  Coming Soon..."));
+    BracketPane bracketGui = new BracketPane(tourney);
     
-    GridPane bracket = new GridPane();
-    bracket.add(bracketTitle, 0, 0);
-    bracket.add(bracketGui, 0, 1);
-    ColumnConstraints bcc1 = new ColumnConstraints();
-    bcc1.setHalignment(HPos.CENTER);
-    bracket.getColumnConstraints().add(bcc1);
-    RowConstraints brow1 = new RowConstraints();
-    RowConstraints brow2 = new RowConstraints();
-    brow2.setVgrow(Priority.ALWAYS);
-    bracket.getRowConstraints().addAll(brow1, brow2);
-    
+    VBox bracket = new VBox(bracketTitle, bracketGui);
+    bracket.setFillWidth(true);
+    bracket.setAlignment(Pos.CENTER);
+    VBox.setVgrow(bracketGui, Priority.ALWAYS);
+
     // Up Next
     Label upNextTitle = new Label("Up Next: ");
     upNextTitle.setFont(new Font("Arial", 24));
@@ -126,16 +126,22 @@ public class BattleBoard extends GridPane implements TitledNode {
     upNext.getColumnConstraints().addAll(uncol1, uncol2);
     GridPane.setColumnSpan(upNext, 3);
 
+    nowPlaying.setPrefWidth(800);
+    bracket.setPrefWidth(800);
+    bracket.setBorder(new Border(new BorderStroke(Color.WHITE, BorderStrokeStyle.SOLID, new CornerRadii(5),
+      BorderWidths.DEFAULT)));
+
     add(nowPlaying, 0, 0);
     add(upNext, 0, 1);
     add(centerPane, 1, 0);
     add(bracket, 2, 0);
 
     ColumnConstraints col1 = new ColumnConstraints();
-    col1.setHgrow(Priority.ALWAYS);
+    col1.setHgrow(Priority.SOMETIMES);
     ColumnConstraints col2 = new ColumnConstraints(800);
     ColumnConstraints col3 = new ColumnConstraints();
-    col3.setHgrow(Priority.ALWAYS);
+    col3.setHgrow(Priority.SOMETIMES);
+    col3.setFillWidth(true);
     getColumnConstraints().addAll(col1, col2, col3);
 
     RowConstraints r1 = new RowConstraints();
