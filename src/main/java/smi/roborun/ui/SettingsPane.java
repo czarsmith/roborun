@@ -3,6 +3,7 @@ package smi.roborun.ui;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -174,9 +175,16 @@ public class SettingsPane extends GridPane {
       firstRoundBattles.get(robotIdx % firstRoundBattles.size()).getRobots().add(sorted.get(robotIdx)));
     
     // For each battle, record the number of robots that will participate.
-    IntStream.range(0, numRounds).forEach(roundIdx -> {
-      tourney.getBattles().stream().filter(b -> b.getRoundNumber() == roundIdx + 1).forEach(b ->
-        b.setNumRobots(roundIdx == 0 ? b.getRobots().size() : tourney.getMaxMeleeSize()));
+    tourney.getBattles().stream().filter(b -> b.getRoundNumber() == 1).forEach(b ->
+      b.setNumRobots(b.getRobots().size()));
+    IntStream.range(1, numRounds).forEach(roundIdx -> {
+      tourney.getBattles().stream().filter(b -> b.getRoundNumber() == roundIdx + 1).forEach(b -> {
+        b.setNumRobots(tourney.getBattles().stream()
+          .filter(b2 -> b2.getRoundNumber() == b.getRoundNumber() - 1)
+          .filter(b2 -> b2.getAdvanceToBattleNumber() == b.getBattleNumber())
+          .map(b2 -> (int)Math.ceil(b2.getNumRobots() / 2d))
+          .collect(Collectors.summingInt(o -> o)));
+      });
     });
   }
 

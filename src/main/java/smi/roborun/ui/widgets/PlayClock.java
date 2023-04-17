@@ -19,7 +19,8 @@ public class PlayClock extends Label {
 
   public PlayClock() {
     time = new SimpleLongProperty();
-    textProperty().bind(Bindings.createStringBinding(() -> label + ": " + UiUtil.millisToMS(time.get(), true), time));
+    textProperty().bind(Bindings.createStringBinding(() -> (label == null ? "" : (label + ": "))
+      + UiUtil.millisToMS(time.get(), true), time));
   }
 
   public void reset(long millis) {
