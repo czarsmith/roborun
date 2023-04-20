@@ -83,6 +83,11 @@ public class Battle {
     }
   }
 
+  @JsonIgnore
+  public String getId() {
+    return getType() + "-" + getRoundNumber() + "-" + getBattleNumber();
+  }
+
   public BattleType getType() {
     return type;
   }
