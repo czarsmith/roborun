@@ -46,7 +46,9 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
     for (BracketBattle bb : battleMap.values()) {
       if (bb.getBattle().getAdvanceToBattleNumber() != null) {
         String otherId = bb.getBattle().getType() + "-" + (bb.getBattle().getRoundNumber() + 1) + "-" + bb.getBattle().getAdvanceToBattleNumber();
-        viewport.getChildren().add(0, new BracketLine(bb, battleMap.get(otherId)));
+        if (battleMap.containsKey(otherId)) {
+          viewport.getChildren().add(0, new BracketLine(bb, battleMap.get(otherId)));
+        }
       }
     }
   }
