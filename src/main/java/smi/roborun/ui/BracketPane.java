@@ -14,16 +14,16 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
     tourney.getBattles().addListener(this);
 
     viewport = new Pane();
-    viewport.setPrefWidth(600);
-    viewport.setMinWidth(600);
-    viewport.setMaxWidth(600);
     setContent(viewport);
+
+    getStyleClass().add("bracket");
   }
 
   @Override
   public void onChanged(Change<? extends Battle> battles) {
     viewport.getChildren().clear();
 
+    double maxY = 0;
     int x = 0;
     int roundNumber = 1;
     BattleType battleType = BattleType.MELEE;
@@ -33,7 +33,17 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
         battleType = battle.getType();
         roundNumber = battle.getRoundNumber();
       }
-      viewport.getChildren().add(new BracketBattle(battle, x, battle.getBattleNumber() - 1));
+      double y = (Math.pow(2, battle.getRoundNumber() - 1) - 1) * 0.5
+        + (battle.getBattleNumber() - 1) * Math.pow(2, battle.getRoundNumber() - 1);
+      viewport.getChildren().add(new BracketBattle(battle, x, y));
+      maxY = Math.max(maxY, y);
     }
+
+    viewport.setPrefWidth(x * 140);
+    viewport.setMinWidth(x * 140);
+    viewport.setMaxWidth(x * 140);
+    viewport.setPrefHeight(maxY * 140);
+    viewport.setMinHeight(maxY * 140);
+    viewport.setMaxHeight(maxY * 140);
   }
 }

@@ -29,6 +29,13 @@
   -fx-cursor: 'move';
 }
 
+.scroll-pane.bracket {
+  -fx-pannable: true;
+  -fx-hbar-policy: 'never';
+  -fx-vbar-policy: 'never';
+  -fx-cursor: 'move';
+}
+
 .text-field.invalid {
   -fx-border-color: red;
   -fx-background-color: #FF9999;

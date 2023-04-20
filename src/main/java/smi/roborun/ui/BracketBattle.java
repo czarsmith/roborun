@@ -2,6 +2,7 @@ package smi.roborun.ui;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -14,7 +15,7 @@ import smi.roborun.mdl.Battle;
 public class BracketBattle extends Label {
   private Battle battle;
 
-  public BracketBattle(Battle battle, int x, int y) {
+  public BracketBattle(Battle battle, double x, double y) {
     super("R" + battle.getRoundNumber() + " B" + battle.getBattleNumber());
     this.battle = battle;
     setPadding(new Insets(16));
@@ -23,5 +24,12 @@ public class BracketBattle extends Label {
       BorderWidths.DEFAULT)));
     setTranslateX(x * (100 + 20));
     setTranslateY(y * (100 + 20));
+
+    DropShadow dropShadow = new DropShadow();
+    dropShadow.setRadius(5.0);
+    dropShadow.setOffsetX(3.0);
+    dropShadow.setOffsetY(3.0);
+    dropShadow.setColor(Color.color(0.4, 0.5, 0.5));
+    setEffect(dropShadow);
   }
 }

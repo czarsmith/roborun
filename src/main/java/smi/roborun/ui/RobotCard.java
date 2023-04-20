@@ -5,6 +5,7 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;
@@ -64,6 +65,13 @@ public class RobotCard extends GridPane {
     codeSizeLabel.setFont(new Font("Arial", 14));
     add(fieldNameLabel("Weight: "), 0, 5);
     add(codeSizeLabel, 1, 5);
+
+    DropShadow dropShadow = new DropShadow();
+    dropShadow.setRadius(5.0);
+    dropShadow.setOffsetX(3.0);
+    dropShadow.setOffsetY(3.0);
+    dropShadow.setColor(Color.color(0.4, 0.5, 0.5));
+    setEffect(dropShadow);
   }
 
   private Label fieldNameLabel(String text) {
