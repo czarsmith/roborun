@@ -3,7 +3,6 @@ package smi.roborun.ui;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -21,6 +20,7 @@ import smi.roborun.ctl.BattleController;
 import smi.roborun.mdl.Battle;
 import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Robot;
+import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 import smi.roborun.ui.widgets.TextInput;
 import smi.roborun.ui.widgets.UiUtil;
@@ -148,14 +148,14 @@ public class SettingsPane extends GridPane {
     int numRounds = computeNumRounds(tourney.getMaxMeleeSize());
     IntStream.range(0, numRounds).forEach(roundIdx -> {
       int numBattlesInRound = (int)Math.pow(2, numRounds - roundIdx - 1);
+      Round round = tourney.addRound(new Round(BattleType.MELEE, roundIdx + 1, numBattlesInRound, numBattlesInRound));
       IntStream.range(0, numBattlesInRound).forEach(battleIdx -> {
-        Battle battle = new Battle();
+        Battle battle = new Battle(round);
         battle.setType(BattleType.MELEE);
         battle.setBattlefieldHeight(tourney.getMeleeBattlefieldWidth());
         battle.setBattlefieldHeight(tourney.getMeleeBattlefieldHeight());
-        battle.setNumRounds(tourney.getNumMeleeRoundsPerBattle());
+        battle.setNumBattleRounds(tourney.getNumMeleeRoundsPerBattle());
         battle.setTps(tourney.getDesiredTps());
-        battle.setRoundNumber(roundIdx + 1);
         battle.setBattleNumber(battleIdx + 1);
         tourney.getBattles().add(battle);
 
@@ -194,24 +194,23 @@ public class SettingsPane extends GridPane {
     int numFirstRoundBattles = totalRobots - (int)Math.pow(2, numRounds - 1);
     IntStream.range(0, numRounds).forEach(roundIdx -> {
       int maxNumBattlesInRound = (int)Math.pow(2, numRounds - roundIdx - 1);
-      int numBattlesInRound = roundIdx == 0 ? numFirstRoundBattles : maxNumBattlesInRound;
-      boolean isPreliminary = numBattlesInRound < maxNumBattlesInRound;
-      IntStream.range(0, numBattlesInRound).forEach(battleIdx -> {
-        Battle battle = new Battle();
+      Round round = tourney.addRound(new Round(BattleType.VS, roundIdx + 1,
+        roundIdx == 0 ? numFirstRoundBattles : maxNumBattlesInRound,
+        (int)Math.pow(2, numRounds - roundIdx - 1)));
+      IntStream.range(0, round.getNumBattles()).forEach(battleIdx -> {
+        Battle battle = new Battle(round);
         battle.setType(BattleType.VS);
         battle.setBattlefieldWidth(tourney.getVsBattlefieldWidth());
         battle.setBattlefieldHeight(tourney.getVsBattlefieldHeight());
-        battle.setNumRounds(tourney.getNumVsRoundsPerBattle());
+        battle.setNumBattleRounds(tourney.getNumVsRoundsPerBattle());
         battle.setTps(tourney.getDesiredTps());
-        battle.setRoundNumber(roundIdx + 1);
         battle.setBattleNumber(battleIdx + 1);
         battle.setNumRobots(2);
-        battle.setPreliminary(isPreliminary);
 
         // Figure out where the winners will go
         if (roundIdx < numRounds - 1) {
           int numBattlesInNextRound = (int)Math.pow(2, numRounds - roundIdx - 2);
-          int effectiveBattleIdx = battleIdx + maxNumBattlesInRound - numBattlesInRound;
+          int effectiveBattleIdx = battleIdx + maxNumBattlesInRound - round.getNumBattles();
           int nextBattleIdx = effectiveBattleIdx % (maxNumBattlesInRound / 2);
           if (effectiveBattleIdx < maxNumBattlesInRound / 2) {
             battle.setAdvanceToBattleNumber(nextBattleIdx + 1);

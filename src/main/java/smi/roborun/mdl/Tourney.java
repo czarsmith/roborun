@@ -1,5 +1,6 @@
 package smi.roborun.mdl;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import smi.roborun.mdl.Battle.BattleType;
 
 @JsonInclude(Include.NON_NULL)
 public class Tourney {
@@ -32,6 +34,7 @@ public class Tourney {
   private Integer vsBattlefieldHeight;
   private Long pregameDelayMillis;
   private Long postgameDelayMillis;
+  private Map<String, Round> rounds;
   private ObservableList<Battle> battles;
 
   /** The current battle.  This is always non-null whenever there is at least one battle defined. */
@@ -45,6 +48,7 @@ public class Tourney {
     robotsMap = new HashMap<>();
     battles = FXCollections.observableArrayList();
     battle = new SimpleObjectProperty<>();
+    rounds = new HashMap<>();
 
     reset(true);
   }
@@ -72,6 +76,7 @@ public class Tourney {
       robots.clear();
       robotsMap.clear();
       battle.set(null);
+      rounds.clear();
     } else {
       battle.set(battles.isEmpty() ? null : battles.get(0));
     }
@@ -215,5 +220,21 @@ public class Tourney {
 
   public void setPostgameDelayMillis(Long postgameDelayMillis) {
     this.postgameDelayMillis = postgameDelayMillis;
-  }  
+  }
+
+  @JsonIgnore
+  public Round addRound(Round round) {
+    this.rounds.put(round.getId(), round);
+    return round;
+  }
+
+  @JsonIgnore
+  public Round getRound(BattleType type, Integer roundNumber) {
+    return rounds.get(type + "-" + roundNumber);
+  }
+
+  @JsonIgnore
+  public Collection<Round> getRounds() {
+    return rounds.values();
+  }
 }

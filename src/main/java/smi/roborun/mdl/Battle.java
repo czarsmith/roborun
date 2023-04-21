@@ -18,13 +18,12 @@ public class Battle {
 
   private BattleType type;
 
-  /** 1-Based round number */
-  private Integer roundNumber;
+  /** A tournament round, not a robocode battle round. */
+  private Round round;
 
   /** 1-Based battle number relative to the round. */
   private Integer battleNumber;
 
-  private Integer numRounds;
   private Integer battlefieldWidth;
   private Integer battlefieldHeight;
   private Integer tps;
@@ -40,6 +39,9 @@ public class Battle {
   private ObservableList<RobotScore> results;
   private Long desiredRuntimeMillis;
 
+  /** The number of robocode battle rounds, not the number of tournament rounds. */
+  private Integer numBattleRounds;
+
   /** The robocode battle round, not the tournament round. */
   private IntegerProperty battleRound;
 
@@ -51,10 +53,12 @@ public class Battle {
 
   private Integer advanceToBattleNumber;
 
-  /** True if this battle is part of a preliminary round which doesn't count toward the total score. */
-  private boolean preliminary;
-
   public Battle() {
+    this(null);
+  }
+
+  public Battle(Round round) {
+    this.round = round;
     numRobots = new SimpleIntegerProperty(0);
     robots = new ArrayList<>();
     results = FXCollections.observableArrayList();
@@ -70,48 +74,52 @@ public class Battle {
     robots.forEach(robot -> robot.reset(hard));
 
     if (hard) {
-      numRounds = 3;
+      numBattleRounds = 3;
       battlefieldWidth = 800;
       battlefieldHeight = 800;
       tps = 25;
       desiredRuntimeMillis = 30000L;
       robots.clear();
       advanceToBattleNumber = null;
-      preliminary = false;
-    } else if (roundNumber > 1 || type != BattleType.MELEE) {
+    } else if (round != null && round.getRoundNumber() > 1 || type != BattleType.MELEE) {
       robots.clear(); // Because only the first melee round has predetermined participants
     }
   }
 
   @JsonIgnore
   public String getId() {
-    return getType() + "-" + getRoundNumber() + "-" + getBattleNumber();
+    return round.getId() + "-" + getBattleNumber();
   }
 
   public BattleType getType() {
     return type;
   }
+
   public void setType(BattleType type) {
     this.type = type;
   }
-  public Integer getRoundNumber() {
-    return roundNumber;
+
+  public Round getRound() {
+    return round;
   }
-  public void setRoundNumber(Integer roundNumber) {
-    this.roundNumber = roundNumber;
+  
+  @JsonIgnore
+  public int getRoundNumber() {
+    return round.getRoundNumber();
   }
+  
   public Integer getBattleNumber() {
     return battleNumber;
   }
   public void setBattleNumber(Integer battleNumber) {
     this.battleNumber = battleNumber;
   }
-  public Integer getNumRounds() {
-    return numRounds;
+  public Integer getNumBattleRounds() {
+    return numBattleRounds;
   }
 
-  public void setNumRounds(Integer numRounds) {
-    this.numRounds = numRounds;
+  public void setNumBattleRounds(Integer numRounds) {
+    this.numBattleRounds = numRounds;
   }
 
   public Integer getBattlefieldWidth() {
@@ -210,13 +218,5 @@ public class Battle {
 
   public void setAdvanceToBattleNumber(Integer advanceToBattleNumber) {
     this.advanceToBattleNumber = advanceToBattleNumber;
-  }
-
-  public boolean isPreliminary() {
-    return preliminary;
-  }
-
-  public void setPreliminary(boolean preliminary) {
-    this.preliminary = preliminary;
   }
 }

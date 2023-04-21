@@ -114,7 +114,7 @@ public class BattleController extends BattleAdaptor {
     System.out.println("Max Rate: " + maxRate);
     maxSpeed = System.currentTimeMillis() + battle.getDesiredRuntimeMillis() * 2 / 3;
     if (maxRate > 0) {
-      maxSpeed = (long)(System.currentTimeMillis() + battle.getDesiredRuntimeMillis() - maxRate * battle.getNumRobots() * battle.getNumRounds());
+      maxSpeed = (long)(System.currentTimeMillis() + battle.getDesiredRuntimeMillis() - maxRate * battle.getNumRobots() * battle.getNumBattleRounds());
     }
     maxSpeed = Math.max(System.currentTimeMillis(), maxSpeed);
     doubleSpeed = System.currentTimeMillis() + (maxSpeed - System.currentTimeMillis()) / 2;
@@ -174,7 +174,7 @@ public class BattleController extends BattleAdaptor {
         battle.getBattlefieldWidth(), battle.getBattlefieldHeight());
       RobotSpecification[] selectedRobots = engine.getLocalRepository(
         StringUtils.join(battle.getRobots().stream().map(Robot::getRobotName).collect(Collectors.toList()), ","));
-      BattleSpecification battleSpec = new BattleSpecification(battle.getNumRounds(), battlefield, selectedRobots);
+      BattleSpecification battleSpec = new BattleSpecification(battle.getNumBattleRounds(), battlefield, selectedRobots);
 
       engine.setVisible(true);
       robocodeWin.setSize(BATTLEFIELD_MARGIN + battle.getBattlefieldWidth(), BATTLEFIELD_MARGIN + battle.getBattlefieldHeight());
@@ -234,7 +234,7 @@ public class BattleController extends BattleAdaptor {
     battle.setEndTime(System.currentTimeMillis());
     
     System.out.println("Battle Ended at: " + new Date());
-    maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumRounds());
+    maxRate = (System.currentTimeMillis() - (double)maxSpeed) / (battle.getNumRobots() * battle.getNumBattleRounds());
     Platform.runLater(() -> {
       updateScores(e.getSortedResults());
       battle.getResults().addAll(battle.getRobots().stream().map(Robot::getBattleScore)
@@ -287,7 +287,7 @@ public class BattleController extends BattleAdaptor {
       battleScore.setSeconds(score.getSeconds());
       battleScore.setThirds(score.getThirds());
 
-      if (!battle.isPreliminary()) {
+      if (!battle.getRound().isPreliminary()) {
         updateTotalScore(battleScore, previousScore);
       }
     }
@@ -312,7 +312,7 @@ public class BattleController extends BattleAdaptor {
       battleScore.setSeconds(score.getTotalSeconds());
       battleScore.setThirds(score.getTotalThirds());
 
-      if (!battle.isPreliminary()) {
+      if (!battle.getRound().isPreliminary()) {
         updateTotalScore(battleScore, previousScore);
       }
     }
@@ -334,7 +334,7 @@ public class BattleController extends BattleAdaptor {
   }
 
   private void updateTotalRank() {
-    if (!battle.isPreliminary()) {
+    if (!battle.getRound().isPreliminary()) {
       List<RobotScore> sorted = tourney.getRobots().stream().map(Robot::getTotalScore)
         .sorted(Comparator.comparing(s -> s.getScore(), Comparator.reverseOrder())).collect(Collectors.toList());
       for (int i = 0; i < sorted.size(); i++) {

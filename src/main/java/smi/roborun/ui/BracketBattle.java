@@ -23,12 +23,27 @@ public class BracketBattle extends Label {
   private Battle battle;
 
   public BracketBattle(Battle battle, double gridX, double gridY) {
-    super("R" + battle.getRoundNumber() + " B" + battle.getBattleNumber());
     this.battle = battle;
-    setPadding(new Insets(16));
+
+    boolean placeholder = battle.getBattleNumber() > battle.getRound().getNumBattles();
+    if (placeholder) {
+      setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(5), new Insets(0))));
+      setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, new CornerRadii(5),
+        BorderWidths.DEFAULT)));
+    } else {
+      setText("R" + battle.getRoundNumber() + " B" + battle.getBattleNumber());
+      setBackground(new Background(new BackgroundFill(Color.GRAY, new CornerRadii(5), new Insets(0))));
+      setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, new CornerRadii(5),
+        BorderWidths.DEFAULT)));
+    }
+
+    setPrefWidth(WIDTH);
+    setMinWidth(WIDTH);
+    setMaxWidth(WIDTH);
+    setPrefHeight(HEIGHT);
+    setMinHeight(HEIGHT);
+    setMaxHeight(HEIGHT);
     setFont(new Font("Arial", 18));
-    setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(5),
-      BorderWidths.DEFAULT)));
     setLayoutX(gridX * (WIDTH + SPACING_X));
     setLayoutY(gridY * (HEIGHT + SPACING_Y));
 
@@ -38,8 +53,6 @@ public class BracketBattle extends Label {
     dropShadow.setOffsetY(3.0);
     dropShadow.setColor(Color.color(0.4, 0.5, 0.5));
     setEffect(dropShadow);
-
-    setBackground(new Background(new BackgroundFill(Color.BLACK, new CornerRadii(5), new Insets(0))));
   }
 
   public Battle getBattle() {
