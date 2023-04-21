@@ -128,8 +128,6 @@ public class BattleBoard extends GridPane implements TitledNode {
 
     nowPlaying.setPrefWidth(800);
     bracket.setPrefWidth(800);
-    bracket.setBorder(new Border(new BorderStroke(Color.WHITE, BorderStrokeStyle.SOLID, new CornerRadii(5),
-      BorderWidths.DEFAULT)));
 
     add(nowPlaying, 0, 0);
     add(upNext, 0, 1);
