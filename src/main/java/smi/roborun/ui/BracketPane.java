@@ -1,7 +1,10 @@
 package smi.roborun.ui;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
@@ -27,20 +30,31 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
   public void onChanged(Change<? extends Battle> battles) {
     viewport.getChildren().clear();
 
-    int x = 0;
+    List<Battle> sortedBattles = battles.getList().stream().sorted(
+      Comparator.comparing(Battle::getType)
+        .thenComparingInt(Battle::getRoundNumber)
+        .thenComparing(Comparator.nullsFirst(Comparator.comparing(Battle::getAdvanceToBattleNumber)))
+        .thenComparingInt(Battle::getBattleNumber))
+      .collect(Collectors.toList());
+
+    int roundIdx = 0;
+    int battleIdx = 0;
     int roundNumber = 1;
     BattleType battleType = BattleType.MELEE;
     Map<String, BracketBattle> battleMap = new HashMap<>();
-    for (Battle battle : battles.getList()) {
+    for (Battle battle : sortedBattles) {
       if (battle.getRoundNumber() != roundNumber || battle.getType() != battleType) {
-        x++;
+        roundIdx++;
+        battleIdx = 0;
         battleType = battle.getType();
         roundNumber = battle.getRoundNumber();
       }
-      double y = (Math.pow(2, battle.getRoundNumber() - 1) - 1) * 0.5
-        + (battle.getBattleNumber() - 1) * Math.pow(2, battle.getRoundNumber() - 1);
-      int xconst = x;
-      viewport.getChildren().add(battleMap.computeIfAbsent(battle.getId(), id -> new BracketBattle(battle, xconst, y)));
+      double gridY = (Math.pow(2, battle.getRoundNumber() - 1) - 1) * 0.5
+        + battleIdx * Math.pow(2, battle.getRoundNumber() - 1);
+      BracketBattle bb = new BracketBattle(battle, roundIdx, gridY);
+      battleMap.put(battle.getId(), bb);
+      viewport.getChildren().add(bb);
+      battleIdx++;
     }
 
     for (BracketBattle bb : battleMap.values()) {
