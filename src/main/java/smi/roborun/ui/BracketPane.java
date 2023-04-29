@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javafx.collections.ListChangeListener;
@@ -12,7 +13,6 @@ import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Battle.BattleType;
 import smi.roborun.mdl.Round;
 import smi.roborun.mdl.Tourney;
 
@@ -34,12 +34,18 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
   public void onChanged(Change<? extends Battle> battles) {
     viewport.getChildren().clear();
 
-    List<Battle> sortedBattles = new ArrayList<>(battles.getList());
-    
+    Map<String, Battle> battleMap = new HashMap<>();
+    battles.getList().forEach(b -> battleMap.put(b.getId(), b));
+    Map<String, List<Battle>> sortedBattlesByRound = new HashMap<>();
+        
     // Create placeholder battles to fill up partial (preliminary) rounds
-    tourney.getRounds().stream().filter(Round::isPreliminary).forEach(round -> {
+    tourney.getRounds().stream().forEach(round -> {
+      List<Battle> sortedBattlesInRound = sortedBattlesByRound.computeIfAbsent(round.getId(), id -> new ArrayList<>());
+      sortedBattlesInRound.addAll(tourney.getBattles().stream()
+        .filter(b -> b.getRound() == round).collect(Collectors.toList()));
+
       Round nextRound = tourney.getRound(round.getType(), round.getRoundNumber() + 1);
-      if (nextRound != null) {
+      if (round.isPreliminary() && nextRound != null) {
         IntStream.range(0, round.getMaxBattles() - round.getNumBattles()).forEach(battleIdx -> {
           Battle b = new Battle(round);
           b.setType(round.getType());
@@ -53,42 +59,50 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
             b.setAdvanceToBattleNumber(nextRound.getNumBattles() - nextBattleIdx);
           }
   
-          sortedBattles.add(b);
+          sortedBattlesInRound.add(b);
         });  
       }
     });
 
-    sortedBattles.sort(Comparator
-      .comparing(Battle::getType)
-      .thenComparingInt(Battle::getRoundNumber)
-      .thenComparing(Comparator.nullsFirst(Comparator.comparing(Battle::getAdvanceToBattleNumber)))
-      .thenComparingInt(Battle::getBattleNumber));
+    List<Round> sortedRounds = tourney.getRounds().stream()
+      .sorted(Comparator.comparing(Round::getType).thenComparing(Round::getMaxBattles))
+      .collect(Collectors.toList());
+    
+    sortedRounds.forEach(round -> {
+      sortedBattlesByRound.get(round.getId()).sort(Comparator.<Battle, Integer>comparing(a -> {
+        List<Battle> battlesInRound = sortedBattlesByRound.get(round.getType() + "-" + (round.getRoundNumber() + 1));
+        return battlesInRound == null ? 0 : battlesInRound.indexOf(
+          battleMap.get(a.getType() + "-" + (a.getRoundNumber() + 1) + "-" + a.getAdvanceToBattleNumber()));
+      }).thenComparing(Battle::getBattleNumber));
+    });
 
-    int roundIdx = 0;
-    int battleIdx = 0;
-    int roundNumber = 1;
-    BattleType battleType = BattleType.MELEE;
-    Map<String, BracketBattle> battleMap = new HashMap<>();
-    for (Battle battle : sortedBattles) {
-      if (battle.getRoundNumber() != roundNumber || battle.getType() != battleType) {
-        roundIdx++;
-        battleIdx = 0;
-        battleType = battle.getType();
-        roundNumber = battle.getRoundNumber();
+//    sortedBattles.sort(Comparator
+//      .comparing(Battle::getType)
+//      .thenComparingInt(Battle::getRoundNumber)
+//      .thenComparing(Comparator.nullsFirst(Comparator.comparing(Battle::getAdvanceToBattleNumber)))
+//      .thenComparingInt(Battle::getBattleNumber));
+
+    sortedRounds.sort(Comparator.comparing(Round::getType).thenComparing(Comparator.comparing(Round::getMaxBattles).reversed()));
+
+    Map<String, BracketBattle> bracketMap = new HashMap<>();
+    for (int roundIdx = 0; roundIdx < sortedRounds.size(); roundIdx++) {
+      Round round = sortedRounds.get(roundIdx);
+      double spacesInRound = Math.pow(2, round.getRoundNumber() - 1);
+      int battleIdx = 0;
+      for (Battle battle : sortedBattlesByRound.get(round.getId())) {
+        double gridY = (spacesInRound - 1) * 0.5 + battleIdx * spacesInRound;
+        BracketBattle bb = new BracketBattle(battle, roundIdx, gridY);
+        bracketMap.put(battle.getId(), bb);
+        viewport.getChildren().add(bb);
+        battleIdx++;
       }
-      double gridY = (Math.pow(2, battle.getRoundNumber() - 1) - 1) * 0.5
-        + battleIdx * Math.pow(2, battle.getRoundNumber() - 1);
-      BracketBattle bb = new BracketBattle(battle, roundIdx, gridY);
-      battleMap.put(battle.getId(), bb);
-      viewport.getChildren().add(bb);
-      battleIdx++;
     }
 
-    for (BracketBattle bb : battleMap.values()) {
+    for (BracketBattle bb : bracketMap.values()) {
       if (bb.getBattle().getAdvanceToBattleNumber() != null) {
         String otherId = bb.getBattle().getType() + "-" + (bb.getBattle().getRoundNumber() + 1) + "-" + bb.getBattle().getAdvanceToBattleNumber();
-        if (battleMap.containsKey(otherId)) {
-          viewport.getChildren().add(0, new BracketLine(bb, battleMap.get(otherId)));
+        if (bracketMap.containsKey(otherId)) {
+          viewport.getChildren().add(0, new BracketLine(bb, bracketMap.get(otherId)));
         }
       }
     }
