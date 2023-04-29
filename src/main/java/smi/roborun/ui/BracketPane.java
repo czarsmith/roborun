@@ -76,12 +76,6 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
       }).thenComparing(Battle::getBattleNumber));
     });
 
-//    sortedBattles.sort(Comparator
-//      .comparing(Battle::getType)
-//      .thenComparingInt(Battle::getRoundNumber)
-//      .thenComparing(Comparator.nullsFirst(Comparator.comparing(Battle::getAdvanceToBattleNumber)))
-//      .thenComparingInt(Battle::getBattleNumber));
-
     sortedRounds.sort(Comparator.comparing(Round::getType).thenComparing(Comparator.comparing(Round::getMaxBattles).reversed()));
 
     Map<String, BracketBattle> bracketMap = new HashMap<>();
