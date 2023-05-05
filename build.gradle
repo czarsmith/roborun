@@ -1,6 +1,7 @@
 plugins {
   id "application"
   id 'org.openjfx.javafxplugin' version '0.0.13'
+  id 'maven-publish'
 }
 
 repositories {
@@ -47,4 +48,22 @@ dependencies {
 
   implementation "org.apache.xmlgraphics:batik-transcoder:1.+"
   implementation "com.fasterxml.jackson.core:jackson-databind:2.14.+"
+}
+
+publishing {
+  repositories {
+    maven {
+      url = 'https://maven.pkg.github.com/czarsmith/roborun'
+      credentials {
+        username = 'czarsmith'
+        password = System.getenv('GITLAB_ACCESS_TOKEN')
+      }
+    }
+  }
+  publications {
+    myDistribution(MavenPublication) {
+      artifact distZip
+      artifact distTar
+    }
+  }
 }
