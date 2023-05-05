@@ -21,6 +21,11 @@
   -fx-effect: dropshadow(one-pass-box, #556666, 10, 0, 3, 3);
 }
 
+.label.bracket-battle.now-playing {
+  -fx-background-color: #113311;
+  -fx-border-color: green;
+}
+
 .scroll-pane > .viewport {
   -fx-background-color: transparent;
 }

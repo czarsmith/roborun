@@ -12,26 +12,19 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToolBar;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
 import smi.roborun.ctl.BattleController;
@@ -84,20 +77,14 @@ public class BattleBoard extends GridPane implements TitledNode {
     nowPlayingTitle.setUnderline(true);
 
     nowPlayingCards = new FlowPane();
+    nowPlayingCards.setAlignment(Pos.CENTER);
     ScrollPane nowPlayingScrollPane = new ScrollPane();
     nowPlayingScrollPane.getStyleClass().add("now-playing");
     nowPlayingScrollPane.setContent(nowPlayingCards);
 
-    GridPane nowPlaying = new GridPane();
-    nowPlaying.add(nowPlayingTitle, 0, 0);
-    nowPlaying.add(nowPlayingScrollPane, 0, 1);
-    ColumnConstraints cc1 = new ColumnConstraints();
-    cc1.setHalignment(HPos.CENTER);
-    nowPlaying.getColumnConstraints().add(cc1);
-    RowConstraints row1 = new RowConstraints();
-    RowConstraints row2 = new RowConstraints();
-    row2.setVgrow(Priority.ALWAYS);
-    nowPlaying.getRowConstraints().addAll(row1, row2);
+    VBox nowPlaying = new VBox(nowPlayingTitle, nowPlayingScrollPane);
+    VBox.setVgrow(nowPlayingScrollPane, Priority.ALWAYS);
+    nowPlaying.setAlignment(Pos.CENTER);
 
     // Bracket
     Label bracketTitle = new Label("Bracket");
@@ -110,6 +97,7 @@ public class BattleBoard extends GridPane implements TitledNode {
     bracket.setFillWidth(true);
     bracket.setAlignment(Pos.CENTER);
     VBox.setVgrow(bracketGui, Priority.ALWAYS);
+    bracketGui.prefWidthProperty().bind(bracket.widthProperty());
 
     // Up Next
     Label upNextTitle = new Label("Up Next: ");
@@ -126,26 +114,21 @@ public class BattleBoard extends GridPane implements TitledNode {
     upNext.getColumnConstraints().addAll(uncol1, uncol2);
     GridPane.setColumnSpan(upNext, 3);
 
-    nowPlaying.setPrefWidth(800);
-    bracket.setPrefWidth(800);
-
     add(nowPlaying, 0, 0);
     add(upNext, 0, 1);
     add(centerPane, 1, 0);
     add(bracket, 2, 0);
 
     ColumnConstraints col1 = new ColumnConstraints();
-    col1.setHgrow(Priority.SOMETIMES);
-    ColumnConstraints col2 = new ColumnConstraints(800);
     ColumnConstraints col3 = new ColumnConstraints();
+    col1.setHgrow(Priority.SOMETIMES);
     col3.setHgrow(Priority.SOMETIMES);
     col3.setFillWidth(true);
-    getColumnConstraints().addAll(col1, col2, col3);
+    getColumnConstraints().addAll(col1, new ColumnConstraints(800), col3);
 
     RowConstraints r1 = new RowConstraints();
     r1.setVgrow(Priority.ALWAYS);
-    RowConstraints r2 = new RowConstraints();
-    getRowConstraints().addAll(r1, r2);
+    getRowConstraints().addAll(r1, new RowConstraints());
 
     tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
 

@@ -1,5 +1,6 @@
 package smi.roborun.ui;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
 import smi.roborun.mdl.Battle;
@@ -22,6 +23,7 @@ public class BracketBattle extends Label {
       setText("R" + battle.getRoundNumber() + " B" + battle.getBattleNumber());
     }
 
+    setAlignment(Pos.CENTER);
     setPrefWidth(WIDTH);
     setMinWidth(WIDTH);
     setMaxWidth(WIDTH);

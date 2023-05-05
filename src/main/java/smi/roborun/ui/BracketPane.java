@@ -19,15 +19,46 @@ import smi.roborun.mdl.Tourney;
 public class BracketPane extends ScrollPane implements ListChangeListener<Battle> {
   private Tourney tourney;
   private Pane viewport;
+  private Map<String, BracketBattle> bracketMap;
 
   public BracketPane(Tourney tourney) {
     this.tourney = tourney;
+    bracketMap = new HashMap<>();
+
     tourney.getBattles().addListener(this);
+    tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
 
     viewport = new Pane();
     setContent(viewport);
 
     getStyleClass().add("bracket");
+  }
+
+  private void onBattleChanged() {
+    if (tourney.getBattle() != null) {
+      bracketMap.values().forEach(bb -> bb.getStyleClass().remove("now-playing"));
+      BracketBattle bb = bracketMap.get(tourney.getBattle().getId());
+      if (bb != null) {
+        bb.getStyleClass().add("now-playing");
+        scrollTo(bb);  
+      }
+    }
+  }
+
+  private void scrollTo(Node node) {
+    if (node != null) {
+      double scrollWidth = getWidth();
+      double scrollHeight = getHeight();
+
+      double width = viewport.getBoundsInLocal().getWidth();
+      double height = viewport.getBoundsInLocal().getHeight();
+  
+      double x = (node.getBoundsInParent().getMaxX() + node.getBoundsInParent().getMinX()) / 2 - scrollWidth / 2;
+      double y = (node.getBoundsInParent().getMaxY() + node.getBoundsInParent().getMinY()) / 2 - scrollHeight / 2;
+  
+      setVvalue(y / (height - scrollHeight));
+      setHvalue(x / (width - scrollWidth));
+    }
   }
 
   @Override
@@ -78,7 +109,7 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
 
     sortedRounds.sort(Comparator.comparing(Round::getType).thenComparing(Comparator.comparing(Round::getMaxBattles).reversed()));
 
-    Map<String, BracketBattle> bracketMap = new HashMap<>();
+    bracketMap.clear();
     for (int roundIdx = 0; roundIdx < sortedRounds.size(); roundIdx++) {
       Round round = sortedRounds.get(roundIdx);
       double spacesInRound = Math.pow(2, round.getRoundNumber() - 1);
