@@ -182,6 +182,7 @@ public class BattleBoard extends GridPane implements TitledNode {
   private void sortNowPlaying() {
     nowPlayingCards.getChildren().stream().sorted(
       Comparator.comparing(card -> ((RobotCard)card).getRobot().getBattleScore().getScore())
+        .thenComparing(card -> ((RobotCard)card).getRobot().getTotalScore().getScore())
         .thenComparing(card -> ((RobotCard)card).getRobot().getRobotName()))
     .forEach(n -> n.toBack());
   }
@@ -192,10 +193,13 @@ public class BattleBoard extends GridPane implements TitledNode {
       int currBattleIdx = tourney.getBattles().indexOf(tourney.getBattle());
       Battle nextBattle = tourney.getBattles().size() > currBattleIdx + 1 ? tourney.getBattles().get(currBattleIdx + 1) : null;
       if (nextBattle != null) {
-        nextBattle.getRobots().stream().map(RobotTile::new).forEach(tile -> {
-          FlowPane.setMargin(tile, new Insets(4));
-          upNextTiles.getChildren().add(tile);
-        });
+        nextBattle.getRobots().stream()
+          .sorted(Comparator.comparing(r -> ((Robot)r).getTotalScore().getScore()).reversed()
+            .thenComparing(r -> ((Robot)r).getRobotName()))
+          .map(RobotTile::new).forEach(tile -> {
+            FlowPane.setMargin(tile, new Insets(4));
+            upNextTiles.getChildren().add(tile);
+          });
         IntStream.range(0, nextBattle.getNumRobots() - nextBattle.getRobots().size())
             .mapToObj(i -> new RobotTile()).forEach(tile -> {
           FlowPane.setMargin(tile, new Insets(4));
