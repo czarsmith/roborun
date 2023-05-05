@@ -1,9 +1,9 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.text.Font;
-import smi.roborun.mdl.Battle;
+import hcs.roborun.mdl.Battle;
 
 public class BracketBattle extends Label {
   public static final double WIDTH = 100;

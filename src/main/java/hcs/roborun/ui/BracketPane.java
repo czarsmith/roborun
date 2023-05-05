@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,9 +12,9 @@ import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Round;
-import smi.roborun.mdl.Tourney;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Round;
+import hcs.roborun.mdl.Tourney;
 
 public class BracketPane extends ScrollPane implements ListChangeListener<Battle> {
   private Tourney tourney;

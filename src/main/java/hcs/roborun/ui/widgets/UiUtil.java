@@ -1,4 +1,4 @@
-package smi.roborun.ui.widgets;
+package hcs.roborun.ui.widgets;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

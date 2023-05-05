@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import java.io.File;
 import java.util.Comparator;
@@ -27,16 +27,16 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
-import smi.roborun.ctl.BattleController;
-import smi.roborun.ctl.BattleEvent;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Battle.BattleType;
-import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.RobotScore;
-import smi.roborun.mdl.Tourney;
-import smi.roborun.ui.widgets.PlayClock;
-import smi.roborun.ui.widgets.SvgButton;
-import smi.roborun.ui.widgets.UiUtil;
+import hcs.roborun.ctl.BattleController;
+import hcs.roborun.ctl.BattleEvent;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Battle.BattleType;
+import hcs.roborun.mdl.Robot;
+import hcs.roborun.mdl.RobotScore;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.widgets.PlayClock;
+import hcs.roborun.ui.widgets.SvgButton;
+import hcs.roborun.ui.widgets.UiUtil;
 
 public class BattleBoard extends GridPane implements TitledNode {
   private BattleController ctl;

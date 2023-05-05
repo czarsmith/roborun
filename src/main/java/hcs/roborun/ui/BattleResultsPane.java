@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import java.util.Comparator;
 
@@ -12,10 +12,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.RobotScore;
-import smi.roborun.mdl.Tourney;
-import smi.roborun.ui.widgets.UiUtil;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.RobotScore;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.widgets.UiUtil;
 
 public class BattleResultsPane extends VBox {
   private TableView<RobotScore> grid;

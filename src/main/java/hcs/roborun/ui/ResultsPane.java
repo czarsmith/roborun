@@ -1,11 +1,11 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import javafx.collections.ListChangeListener.Change;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Tourney;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Tourney;
 
 public class ResultsPane extends ScrollPane {
   private VBox vbox;

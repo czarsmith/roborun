@@ -1,4 +1,4 @@
-package smi.roborun;
+package hcs.roborun;
 
 import java.io.File;
 import java.io.FileInputStream;

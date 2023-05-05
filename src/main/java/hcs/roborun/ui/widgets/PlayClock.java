@@ -1,4 +1,4 @@
-package smi.roborun.ui.widgets;
+package hcs.roborun.ui.widgets;
 
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;

@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import javafx.beans.binding.Bindings;
 import javafx.scene.paint.Color;

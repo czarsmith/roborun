@@ -1,4 +1,4 @@
-package smi.roborun.mdl;
+package hcs.roborun.mdl;
 
 import java.util.ArrayList;
 import java.util.List;

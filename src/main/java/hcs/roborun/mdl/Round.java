@@ -1,8 +1,8 @@
-package smi.roborun.mdl;
+package hcs.roborun.mdl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import smi.roborun.mdl.Battle.BattleType;
+import hcs.roborun.mdl.Battle.BattleType;
 
 public class Round {
   private BattleType type;

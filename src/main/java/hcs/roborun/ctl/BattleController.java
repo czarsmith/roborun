@@ -1,4 +1,4 @@
-package smi.roborun.ctl;
+package hcs.roborun.ctl;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -47,11 +47,11 @@ import robocode.control.events.RoundEndedEvent;
 import robocode.control.events.RoundStartedEvent;
 import robocode.control.events.TurnEndedEvent;
 import robocode.control.snapshot.IScoreSnapshot;
-import smi.roborun.RobocodeConfig;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.RobotScore;
-import smi.roborun.mdl.Tourney;
+import hcs.roborun.RobocodeConfig;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Robot;
+import hcs.roborun.mdl.RobotScore;
+import hcs.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
   private static final int BATTLEFIELD_MARGIN = 4;

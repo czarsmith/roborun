@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -9,7 +9,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import smi.roborun.mdl.Robot;
+import hcs.roborun.mdl.Robot;
 
 public class RobotTile extends VBox {
   private Robot robot;

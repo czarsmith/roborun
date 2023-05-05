@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,14 +16,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.GridPane;
-import smi.roborun.ctl.BattleController;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Battle.BattleType;
-import smi.roborun.mdl.Robot;
-import smi.roborun.mdl.Round;
-import smi.roborun.mdl.Tourney;
-import smi.roborun.ui.widgets.TextInput;
-import smi.roborun.ui.widgets.UiUtil;
+import hcs.roborun.ctl.BattleController;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Battle.BattleType;
+import hcs.roborun.mdl.Robot;
+import hcs.roborun.mdl.Round;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.widgets.TextInput;
+import hcs.roborun.ui.widgets.UiUtil;
 
 public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;

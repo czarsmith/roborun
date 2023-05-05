@@ -1,4 +1,4 @@
-package smi.roborun.ui.widgets;
+package hcs.roborun.ui.widgets;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;

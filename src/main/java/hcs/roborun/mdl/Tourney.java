@@ -1,4 +1,4 @@
-package smi.roborun.mdl;
+package hcs.roborun.mdl;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import smi.roborun.mdl.Battle.BattleType;
+import hcs.roborun.mdl.Battle.BattleType;
 
 @JsonInclude(Include.NON_NULL)
 public class Tourney {

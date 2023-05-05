@@ -1,4 +1,4 @@
-package smi.roborun.ui;
+package hcs.roborun.ui;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
@@ -13,7 +13,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import smi.roborun.mdl.Robot;
+import hcs.roborun.mdl.Robot;
 
 public class RobotCard extends GridPane {
   private static final int PADDING = 8;

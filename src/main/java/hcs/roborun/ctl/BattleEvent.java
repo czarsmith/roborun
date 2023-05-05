@@ -1,9 +1,9 @@
-package smi.roborun.ctl;
+package hcs.roborun.ctl;
 
 import javafx.event.Event;
 import javafx.event.EventType;
-import smi.roborun.mdl.Battle;
-import smi.roborun.mdl.Tourney;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Tourney;
 
 public class BattleEvent extends Event {
   public static final EventType<BattleEvent> STARTED = new EventType<>(ANY, "STARTED");

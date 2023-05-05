@@ -1,4 +1,4 @@
-package smi.roborun;
+package hcs.roborun;
 
 import java.util.List;
 
@@ -16,15 +16,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import smi.roborun.ctl.BattleController;
-import smi.roborun.mdl.Tourney;
-import smi.roborun.ui.BattleBoard;
-import smi.roborun.ui.ResultsPane;
-import smi.roborun.ui.SettingsPane;
-import smi.roborun.ui.TitledNode;
-import smi.roborun.ui.widgets.CardPane;
-import smi.roborun.ui.widgets.SvgButton;
-import smi.roborun.ui.widgets.UiUtil;
+import hcs.roborun.ctl.BattleController;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.BattleBoard;
+import hcs.roborun.ui.ResultsPane;
+import hcs.roborun.ui.SettingsPane;
+import hcs.roborun.ui.TitledNode;
+import hcs.roborun.ui.widgets.CardPane;
+import hcs.roborun.ui.widgets.SvgButton;
+import hcs.roborun.ui.widgets.UiUtil;
 
 public class Roborun extends Application {
   private BattleController ctl;
