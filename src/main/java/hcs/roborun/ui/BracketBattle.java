@@ -18,7 +18,7 @@ public class BracketBattle extends Label {
     getStyleClass().add("bracket-battle");
 
     if (battle.getBattleNumber() > battle.getRound().getNumBattles()) {
-      setText("N/A");
+      setText("-");
     } else {
       setText("R" + battle.getRoundNumber() + " B" + battle.getBattleNumber());
     }

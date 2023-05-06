@@ -10,6 +10,16 @@ import java.util.stream.IntStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import hcs.roborun.ctl.BattleController;
+import hcs.roborun.ctl.BattleEvent;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Battle.BattleType;
+import hcs.roborun.mdl.Robot;
+import hcs.roborun.mdl.RobotScore;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.widgets.PlayClock;
+import hcs.roborun.ui.widgets.SvgButton;
+import hcs.roborun.ui.widgets.UiUtil;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
@@ -27,16 +37,6 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
-import hcs.roborun.ctl.BattleController;
-import hcs.roborun.ctl.BattleEvent;
-import hcs.roborun.mdl.Battle;
-import hcs.roborun.mdl.Battle.BattleType;
-import hcs.roborun.mdl.Robot;
-import hcs.roborun.mdl.RobotScore;
-import hcs.roborun.mdl.Tourney;
-import hcs.roborun.ui.widgets.PlayClock;
-import hcs.roborun.ui.widgets.SvgButton;
-import hcs.roborun.ui.widgets.UiUtil;
 
 public class BattleBoard extends GridPane implements TitledNode {
   private BattleController ctl;
@@ -66,6 +66,7 @@ public class BattleBoard extends GridPane implements TitledNode {
     playClock.setAlignment(Pos.CENTER_RIGHT);
     playClock.setFont(new Font("Arial", 24));
     ToolBar toolBar = new ToolBar();
+    toolBar.getStyleClass().add("battle-board-section-header");
     toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace(), playClock, UiUtil.hspace(16));
     Pane robocodePlaceholder = new Pane();
     VBox centerPane = new VBox(toolBar, robocodePlaceholder);
@@ -73,8 +74,11 @@ public class BattleBoard extends GridPane implements TitledNode {
 
     // Now Playing
     Label nowPlayingTitle = new Label("Now Playing");
+    nowPlayingTitle.getStyleClass().add("battle-board-section-header");
+    nowPlayingTitle.setPadding(new Insets(8));
     nowPlayingTitle.setFont(new Font("Arial", 24));
-    nowPlayingTitle.setUnderline(true);
+    nowPlayingTitle.setAlignment(Pos.CENTER);
+    nowPlayingTitle.setMaxWidth(Double.MAX_VALUE);
 
     nowPlayingCards = new FlowPane();
     nowPlayingCards.setAlignment(Pos.CENTER);
@@ -83,19 +87,24 @@ public class BattleBoard extends GridPane implements TitledNode {
     nowPlayingScrollPane.setContent(nowPlayingCards);
 
     VBox nowPlaying = new VBox(nowPlayingTitle, nowPlayingScrollPane);
-    VBox.setVgrow(nowPlayingScrollPane, Priority.ALWAYS);
     nowPlaying.setAlignment(Pos.CENTER);
+    nowPlaying.setFillWidth(true);
+    VBox.setVgrow(nowPlayingScrollPane, Priority.ALWAYS);
 
     // Bracket
     Label bracketTitle = new Label("Bracket");
+    bracketTitle.getStyleClass().add("battle-board-section-header");
+    bracketTitle.setPadding(new Insets(8));
     bracketTitle.setFont(new Font("Arial", 24));
-    bracketTitle.setUnderline(true);
+    bracketTitle.setAlignment(Pos.CENTER);
+    bracketTitle.setMaxWidth(Double.MAX_VALUE);
 
     BracketPane bracketGui = new BracketPane(tourney);
     
     VBox bracket = new VBox(bracketTitle, bracketGui);
-    bracket.setFillWidth(true);
     bracket.setAlignment(Pos.CENTER);
+    bracket.setFillWidth(true);
+    bracket.setSpacing(4);
     VBox.setVgrow(bracketGui, Priority.ALWAYS);
     bracketGui.prefWidthProperty().bind(bracket.widthProperty());
 

@@ -32,6 +32,7 @@ public class Tourney {
   private Integer numVsRoundsPerBattle;
   private Integer vsBattlefieldWidth;
   private Integer vsBattlefieldHeight;
+  private Integer minRoundsToWatch;
   private Long pregameDelayMillis;
   private Long postgameDelayMillis;
   private Map<String, Round> rounds;
@@ -67,6 +68,7 @@ public class Tourney {
       meleeBattlefieldHeight = 800;
       vsBattlefieldWidth = 800;
       vsBattlefieldHeight = 800;
+      minRoundsToWatch = 0;
       desiredTps = 25;
       numMeleeRoundsPerBattle = 5;
       numVsRoundsPerBattle = 5;
@@ -236,5 +238,13 @@ public class Tourney {
   @JsonIgnore
   public Collection<Round> getRounds() {
     return rounds.values();
+  }
+
+  public Integer getMinRoundsToWatch() {
+    return minRoundsToWatch;
+  }
+
+  public void setMinRoundsToWatch(Integer minRoundsToWatch) {
+    this.minRoundsToWatch = minRoundsToWatch;
   }
 }

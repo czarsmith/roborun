@@ -1,19 +1,13 @@
 package hcs.roborun.ui;
 
+import hcs.roborun.mdl.Robot;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import hcs.roborun.mdl.Robot;
 
 public class RobotCard extends GridPane {
   private static final int PADDING = 8;
@@ -21,15 +15,11 @@ public class RobotCard extends GridPane {
 
   public RobotCard(Robot robot) {
     this.robot = robot;
-
-    setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
+    getStyleClass().add("robot-card");
     setPadding(new Insets(PADDING));
 
     ReadOnlyDoubleProperty cardWidth = widthProperty();
 
-    //IntegerProperty battleRankProperty = robot.getBattleScore().getRankProperty();
-    //Bindings.createStringBinding(() ->
-    //  getRankDisplay((int)battleRankProperty.get()) + " " + robotDisplayName, battleRankProperty));
     Label displayNameLabel = new Label();
     displayNameLabel.setFont(new Font("Arial", 18));
     displayNameLabel.textProperty().bind(robot.getShortNameAndRankProperty());
@@ -65,13 +55,6 @@ public class RobotCard extends GridPane {
     codeSizeLabel.setFont(new Font("Arial", 14));
     add(fieldNameLabel("Weight: "), 0, 5);
     add(codeSizeLabel, 1, 5);
-
-    DropShadow dropShadow = new DropShadow();
-    dropShadow.setRadius(5.0);
-    dropShadow.setOffsetX(3.0);
-    dropShadow.setOffsetY(3.0);
-    dropShadow.setColor(Color.color(0.4, 0.5, 0.5));
-    setEffect(dropShadow);
   }
 
   private Label fieldNameLabel(String text) {

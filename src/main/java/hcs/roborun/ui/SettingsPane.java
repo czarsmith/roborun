@@ -6,16 +6,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.layout.GridPane;
 import hcs.roborun.ctl.BattleController;
 import hcs.roborun.mdl.Battle;
 import hcs.roborun.mdl.Battle.BattleType;
@@ -24,12 +14,24 @@ import hcs.roborun.mdl.Round;
 import hcs.roborun.mdl.Tourney;
 import hcs.roborun.ui.widgets.TextInput;
 import hcs.roborun.ui.widgets.UiUtil;
+import javafx.beans.value.ChangeListener;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.layout.GridPane;
 
 public class SettingsPane extends GridPane {
   private ObservableList<Robot> robots;
   private TableView<Robot> robotGrid;
   private TextInput tourneyTimeField;
   private TextInput tpsField;
+  private TextInput roundsToWatchField;
   private TextInput roundsPerMeleeField;
   private TextInput maxMeleeSizeField;
   private TextInput meleeWidthField;
@@ -74,6 +76,10 @@ public class SettingsPane extends GridPane {
     tpsField = new TextInput(Integer.toString(tourney.getDesiredTps()), "[1-9][0-9]*", cl);
     form.add(new Label("Minimum TPS: "), 0, 1);
     form.add(tpsField, 1, 1);
+
+    roundsToWatchField = new TextInput(Integer.toString(tourney.getMinRoundsToWatch()), "[0-9]", cl);
+    form.add(new Label("Min Rounds to Watch: "), 0, 2);
+    form.add(roundsToWatchField, 1, 2);
 
     roundsPerMeleeField = new TextInput(Long.toString(tourney.getNumMeleeRoundsPerBattle()), "[1-9][0-9]*", cl);
     form.add(new Label("Rounds Per Melee Battle: "), 2, 0);
@@ -120,6 +126,7 @@ public class SettingsPane extends GridPane {
     tourney.setNumVsRoundsPerBattle(Integer.parseInt(roundsPerVsField.getText()));
     tourney.setVsBattlefieldWidth(Integer.parseInt(vsWidthField.getText()));
     tourney.setVsBattlefieldHeight(Integer.parseInt(vsHeightField.getText()));
+    tourney.setMinRoundsToWatch(Integer.parseInt(roundsToWatchField.getText()));
 
     if (tourney.getRobots().size() < 2) {
       return;

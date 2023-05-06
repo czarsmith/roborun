@@ -31,6 +31,11 @@ import javax.swing.JToolBar;
 
 import org.apache.commons.lang3.StringUtils;
 
+import hcs.roborun.RobocodeConfig;
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Robot;
+import hcs.roborun.mdl.RobotScore;
+import hcs.roborun.mdl.Tourney;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -47,11 +52,6 @@ import robocode.control.events.RoundEndedEvent;
 import robocode.control.events.RoundStartedEvent;
 import robocode.control.events.TurnEndedEvent;
 import robocode.control.snapshot.IScoreSnapshot;
-import hcs.roborun.RobocodeConfig;
-import hcs.roborun.mdl.Battle;
-import hcs.roborun.mdl.Robot;
-import hcs.roborun.mdl.RobotScore;
-import hcs.roborun.mdl.Tourney;
 
 public class BattleController extends BattleAdaptor {
   private static final int BATTLEFIELD_MARGIN = 4;
@@ -121,10 +121,12 @@ public class BattleController extends BattleAdaptor {
     doubleSpeed = Math.max(System.currentTimeMillis(), doubleSpeed);
     System.out.println("Double Speed: " + new Date(doubleSpeed));
     System.out.println("Max Speed: " + new Date(maxSpeed));
-    if (doubleSpeed < maxSpeed) {
-      tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), doubleSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
-    }
-    tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), maxSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+    if (tourney.getMinRoundsToWatch() == 0) {
+      if (doubleSpeed < maxSpeed) {
+        tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), doubleSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+      }
+      tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), maxSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);    
+    } // Else wait until the desired number of rounds are done and then figure out when we need to speed up
 
     try {
       battleThread.join();
@@ -230,7 +232,9 @@ public class BattleController extends BattleAdaptor {
     if (tpsNext != null) {
       tpsNext.cancel(true);
     }
-    tpsMax.cancel(true);
+    if (tpsMax != null) {
+      tpsMax.cancel(true);
+    }
     battle.setEndTime(System.currentTimeMillis());
     
     System.out.println("Battle Ended at: " + new Date());
@@ -254,6 +258,18 @@ public class BattleController extends BattleAdaptor {
 
   @Override
   public void onRoundEnded(RoundEndedEvent e) {
+    if (e.getRound() == tourney.getMinRoundsToWatch() - 1) {
+      if (doubleSpeed < maxSpeed && doubleSpeed > System.currentTimeMillis()) {
+        tpsNext = ses.schedule(() -> setTps(battle.getTps() * 2), doubleSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+      } else if (doubleSpeed < maxSpeed) {
+        setTps(battle.getTps() * 2);
+      }
+      if (maxSpeed > System.currentTimeMillis()) {
+        tpsMax = ses.schedule(() -> setTps(Integer.MAX_VALUE), maxSpeed - System.currentTimeMillis(), TimeUnit.MILLISECONDS);  
+      } else {
+        setTps(Integer.MAX_VALUE);
+      }
+    }
     Platform.runLater(() -> stage.fireEvent(BattleEvent.roundFinished()));
   }
 
