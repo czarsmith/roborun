@@ -8,18 +8,26 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import hcs.roborun.mdl.Battle;
+import hcs.roborun.mdl.Round;
+import hcs.roborun.mdl.Tourney;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
-import hcs.roborun.mdl.Battle;
-import hcs.roborun.mdl.Round;
-import hcs.roborun.mdl.Tourney;
+import javafx.util.Duration;
 
 public class BracketPane extends ScrollPane implements ListChangeListener<Battle> {
   private Tourney tourney;
   private Pane viewport;
   private Map<String, BracketBattle> bracketMap;
+  private Timeline animX;
+  private Timeline animY;
 
   public BracketPane(Tourney tourney) {
     this.tourney = tourney;
@@ -29,6 +37,7 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
     tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
 
     viewport = new Pane();
+    viewport.widthProperty().addListener((a, b, c) -> scrollToBattle());
     setContent(viewport);
 
     getStyleClass().add("bracket");
@@ -40,24 +49,45 @@ public class BracketPane extends ScrollPane implements ListChangeListener<Battle
       BracketBattle bb = bracketMap.get(tourney.getBattle().getId());
       if (bb != null) {
         bb.getStyleClass().add("now-playing");
-        scrollTo(bb);  
+      }
+    }
+    scrollToBattle();
+  }
+
+  private void scrollToBattle() {
+    if (tourney.getBattle() != null) {
+      BracketBattle bb = bracketMap.get(tourney.getBattle().getId());
+      if (bb != null) {
+        Platform.runLater(() -> scrollTo(bb));
       }
     }
   }
-
+  
   private void scrollTo(Node node) {
+    if (animX != null) {
+      animX.stop();
+    }
+    if (animY != null) {
+      animY.stop();
+    }
+
     if (node != null) {
       double scrollWidth = getWidth();
       double scrollHeight = getHeight();
 
-      double width = viewport.getBoundsInLocal().getWidth();
-      double height = viewport.getBoundsInLocal().getHeight();
+      double width = viewport.getWidth();
+      double height = viewport.getHeight();
   
       double x = (node.getBoundsInParent().getMaxX() + node.getBoundsInParent().getMinX()) / 2 - scrollWidth / 2;
       double y = (node.getBoundsInParent().getMaxY() + node.getBoundsInParent().getMinY()) / 2 - scrollHeight / 2;
   
-      setVvalue(y / (height - scrollHeight));
-      setHvalue(x / (width - scrollWidth));
+      animX = new Timeline(new KeyFrame(Duration.millis(1000),
+        new KeyValue(this.hvalueProperty(), Math.min(1, Math.max(0, x / (width - scrollWidth))), Interpolator.LINEAR)));
+      animX.play();
+  
+      animY = new Timeline(new KeyFrame(Duration.millis(1000),
+        new KeyValue(this.vvalueProperty(), Math.min(1, Math.max(0, y / (height - scrollHeight))), Interpolator.LINEAR)));
+      animY.play();
     }
   }
 
