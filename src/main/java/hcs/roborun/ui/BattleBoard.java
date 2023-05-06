@@ -31,6 +31,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
@@ -86,10 +87,14 @@ public class BattleBoard extends GridPane implements TitledNode {
     nowPlayingScrollPane.getStyleClass().add("now-playing");
     nowPlayingScrollPane.setContent(nowPlayingCards);
 
-    VBox nowPlaying = new VBox(nowPlayingTitle, nowPlayingScrollPane);
+    HBox nowPlayingHBox = new HBox(nowPlayingScrollPane);
+    nowPlayingHBox.setAlignment(Pos.CENTER);
+    nowPlayingHBox.setFillHeight(false);
+    
+    VBox nowPlaying = new VBox(nowPlayingTitle, nowPlayingHBox);
     nowPlaying.setAlignment(Pos.CENTER);
     nowPlaying.setFillWidth(true);
-    VBox.setVgrow(nowPlayingScrollPane, Priority.ALWAYS);
+    VBox.setVgrow(nowPlayingHBox, Priority.ALWAYS);
 
     // Bracket
     Label bracketTitle = new Label("Bracket");
@@ -100,12 +105,15 @@ public class BattleBoard extends GridPane implements TitledNode {
     bracketTitle.setMaxWidth(Double.MAX_VALUE);
 
     BracketPane bracketGui = new BracketPane(tourney);
-    
-    VBox bracket = new VBox(bracketTitle, bracketGui);
+
+    HBox bracketHBox = new HBox(bracketGui);
+    bracketHBox.setAlignment(Pos.CENTER);
+    bracketHBox.setFillHeight(false);
+
+    VBox bracket = new VBox(bracketTitle, bracketHBox);
     bracket.setAlignment(Pos.CENTER);
-    bracket.setFillWidth(true);
     bracket.setSpacing(4);
-    VBox.setVgrow(bracketGui, Priority.ALWAYS);
+    VBox.setVgrow(bracketHBox, Priority.ALWAYS);
     bracketGui.prefWidthProperty().bind(bracket.widthProperty());
 
     // Up Next
