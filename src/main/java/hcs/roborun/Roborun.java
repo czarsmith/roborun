@@ -73,7 +73,7 @@ public class Roborun extends Application {
     Scene scene = new Scene(borderPane, 640, 480, Color.GRAY);
     scene.getStylesheets().add("index.css");
 
-    stage.initStyle(StageStyle.UNDECORATED);
+//    stage.initStyle(StageStyle.UNDECORATED);
     stage.setMaximized(true);
     stage.setScene(scene);
     stage.show();
