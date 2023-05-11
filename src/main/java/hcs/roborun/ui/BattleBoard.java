@@ -17,6 +17,7 @@ import hcs.roborun.mdl.Battle.BattleType;
 import hcs.roborun.mdl.Robot;
 import hcs.roborun.mdl.RobotScore;
 import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.widgets.DragResizeMod;
 import hcs.roborun.ui.widgets.PlayClock;
 import hcs.roborun.ui.widgets.SvgButton;
 import hcs.roborun.ui.widgets.UiUtil;
@@ -34,12 +35,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import net.sf.robocode.io.FileUtil;
 
-public class BattleBoard extends GridPane implements TitledNode {
+public class BattleBoard extends Pane implements TitledNode {
   private BattleController ctl;
   private Tourney tourney;
   private FlowPane nowPlayingCards;
@@ -69,9 +69,8 @@ public class BattleBoard extends GridPane implements TitledNode {
     ToolBar toolBar = new ToolBar();
     toolBar.getStyleClass().add("battle-board-section-header");
     toolBar.getItems().addAll(UiUtil.hspace(), playBtn, resetBtn, UiUtil.hspace(), playClock, UiUtil.hspace(16));
-    Pane robocodePlaceholder = new Pane();
-    VBox centerPane = new VBox(toolBar, robocodePlaceholder);
-    VBox.setVgrow(robocodePlaceholder, Priority.ALWAYS);
+    toolBar.setPrefSize(400, 50);
+    DragResizeMod.makeResizable(toolBar);
 
     // Now Playing
     Label nowPlayingTitle = new Label("Now Playing");
@@ -92,9 +91,12 @@ public class BattleBoard extends GridPane implements TitledNode {
     nowPlayingHBox.setFillHeight(false);
     
     VBox nowPlaying = new VBox(nowPlayingTitle, nowPlayingHBox);
+    nowPlaying.getStyleClass().add("now-playing-pane");
     nowPlaying.setAlignment(Pos.CENTER);
     nowPlaying.setFillWidth(true);
+    nowPlaying.setPrefSize(400, 400);
     VBox.setVgrow(nowPlayingHBox, Priority.ALWAYS);
+    DragResizeMod.makeResizable(nowPlaying);
 
     // Bracket
     Label bracketTitle = new Label("Bracket");
@@ -111,41 +113,33 @@ public class BattleBoard extends GridPane implements TitledNode {
     bracketHBox.setFillHeight(false);
 
     VBox bracket = new VBox(bracketTitle, bracketHBox);
+    bracket.getStyleClass().add("bracket-pane");
     bracket.setAlignment(Pos.CENTER);
     bracket.setSpacing(4);
+    bracket.setPrefSize(400, 400);
     VBox.setVgrow(bracketHBox, Priority.ALWAYS);
     bracketGui.prefWidthProperty().bind(bracket.widthProperty());
+    DragResizeMod.makeResizable(bracket);
 
     // Up Next
     Label upNextTitle = new Label("Up Next: ");
     upNextTitle.setFont(new Font("Arial", 24));
     upNextTitle.setPadding(new Insets(0, 8, 0, 4));
+    upNextTitle.setPrefWidth(130);
     upNextTiles = new FlowPane();
     GridPane upNext = new GridPane();
+    upNext.getStyleClass().add("up-next-pane");
     upNext.setPadding(new Insets(4));
     upNext.add(upNextTitle, 0, 0);
     upNext.add(upNextTiles, 1, 0);
+    upNext.setPrefSize(800, 65);
     ColumnConstraints uncol1 = new ColumnConstraints();
     ColumnConstraints uncol2 = new ColumnConstraints();
     uncol2.setHgrow(Priority.ALWAYS);
     upNext.getColumnConstraints().addAll(uncol1, uncol2);
-    GridPane.setColumnSpan(upNext, 3);
+    DragResizeMod.makeResizable(upNext);
 
-    add(nowPlaying, 0, 0);
-    add(upNext, 0, 1);
-    add(centerPane, 1, 0);
-    add(bracket, 2, 0);
-
-    ColumnConstraints col1 = new ColumnConstraints();
-    ColumnConstraints col3 = new ColumnConstraints();
-    col1.setHgrow(Priority.SOMETIMES);
-    col3.setHgrow(Priority.SOMETIMES);
-    col3.setFillWidth(true);
-    getColumnConstraints().addAll(col1, new ColumnConstraints(800), col3);
-
-    RowConstraints r1 = new RowConstraints();
-    r1.setVgrow(Priority.ALWAYS);
-    getRowConstraints().addAll(r1, new RowConstraints());
+    getChildren().addAll(nowPlaying, toolBar, bracket, upNext);
 
     tourney.getBattleProperty().addListener((a,b,c) -> onBattleChanged());
 

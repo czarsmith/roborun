@@ -48,6 +48,14 @@ dependencies {
 
   implementation "org.apache.xmlgraphics:batik-transcoder:1.+"
   implementation "com.fasterxml.jackson.core:jackson-databind:2.14.+"
+
+  // Just to get them into the distro.  The linux deps still appear first on the classpath so
+  // it doesn't mess up development, but this allows us to run the application on windows too
+  // with some careful command-line crafting.
+  runtimeOnly "org.openjfx:javafx-controls:17.0.6:win"
+  runtimeOnly "org.openjfx:javafx-swing:17.0.6:win"
+  runtimeOnly "org.openjfx:javafx-graphics:17.0.6:win"
+  runtimeOnly "org.openjfx:javafx-base:17.0.6:win"
 }
 
 publishing {

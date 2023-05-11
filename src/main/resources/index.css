@@ -61,6 +61,10 @@
   -fx-cursor: 'move';
 }
 
+.now-playing-pane, .bracket-pane, .up-next-pane {
+  -fx-border-color: black;
+}
+
 .text-field.invalid {
   -fx-border-color: red;
   -fx-background-color: #FF9999;

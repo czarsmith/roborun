@@ -2,6 +2,15 @@ package hcs.roborun;
 
 import java.util.List;
 
+import hcs.roborun.ctl.BattleController;
+import hcs.roborun.mdl.Tourney;
+import hcs.roborun.ui.BattleBoard;
+import hcs.roborun.ui.ResultsPane;
+import hcs.roborun.ui.SettingsPane;
+import hcs.roborun.ui.TitledNode;
+import hcs.roborun.ui.widgets.CardPane;
+import hcs.roborun.ui.widgets.SvgButton;
+import hcs.roborun.ui.widgets.UiUtil;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -16,15 +25,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import hcs.roborun.ctl.BattleController;
-import hcs.roborun.mdl.Tourney;
-import hcs.roborun.ui.BattleBoard;
-import hcs.roborun.ui.ResultsPane;
-import hcs.roborun.ui.SettingsPane;
-import hcs.roborun.ui.TitledNode;
-import hcs.roborun.ui.widgets.CardPane;
-import hcs.roborun.ui.widgets.SvgButton;
-import hcs.roborun.ui.widgets.UiUtil;
 
 public class Roborun extends Application {
   private BattleController ctl;
@@ -73,7 +73,10 @@ public class Roborun extends Application {
     Scene scene = new Scene(borderPane, 640, 480, Color.GRAY);
     scene.getStylesheets().add("index.css");
 
-//    stage.initStyle(StageStyle.UNDECORATED);
+    if (getBooleanArg(args, "--undecorated")) {
+      stage.initStyle(StageStyle.UNDECORATED);
+    }
+    
     stage.setMaximized(true);
     stage.setScene(scene);
     stage.show();
@@ -99,6 +102,10 @@ public class Roborun extends Application {
       }
     }
     return value;
+  }
+
+  private boolean getBooleanArg(List<String> args, String key) {
+    return args.stream().anyMatch(a -> key.equals(a));
   }
 
   public static void main(String[] args) {
