@@ -39,7 +39,7 @@ public class Roborun extends Application {
     String robocodeDir = getArg(args, "--robocode-dir");
     
     Tourney tourney = new Tourney();
-    ctl = new BattleController(stage, tourney, robocodeDir);
+    ctl = new BattleController(stage, tourney, robocodeDir, getBooleanArg(args, "--robocode-undecorated"));
 
     Label appName = new Label("Roborun");
     appName.setFont(new Font("Arial", 24));

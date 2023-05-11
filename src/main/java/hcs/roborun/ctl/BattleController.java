@@ -31,7 +31,6 @@ import javax.swing.JToolBar;
 
 import org.apache.commons.lang3.StringUtils;
 
-import hcs.roborun.RobocodeConfig;
 import hcs.roborun.mdl.Battle;
 import hcs.roborun.mdl.Robot;
 import hcs.roborun.mdl.RobotScore;
@@ -72,10 +71,12 @@ public class BattleController extends BattleAdaptor {
   private long doubleSpeed;
   private long maxSpeed;
   private double maxRate;
+  private boolean undecorated;
 
-  public BattleController(Stage stage, Tourney tourney, String robocodeHomePath) {
+  public BattleController(Stage stage, Tourney tourney, String robocodeHomePath, boolean undecorated) {
     this.stage = stage;
     this.tourney = tourney;
+    this.undecorated = undecorated;
     robocodeDir = new File(robocodeHomePath);    
     ses = Executors.newSingleThreadScheduledExecutor();
 
@@ -141,9 +142,11 @@ public class BattleController extends BattleAdaptor {
       robocodeWin = until(() -> Stream.of(Window.getWindows())
         .filter(w -> "net.sf.robocode.ui.dialog.RobocodeFrame".equals(w.getClass().getName()))
         .findAny().orElse(null), 10);
-      try {
-        ((JFrame)robocodeWin).setUndecorated(true);
-      } catch (java.awt.IllegalComponentStateException e) {}
+      if (undecorated) {
+        try {
+          ((JFrame)robocodeWin).setUndecorated(true);
+        } catch (java.awt.IllegalComponentStateException e) {}
+      }
 
       tpsSlider = until(() -> (JSlider)findComponent(robocodeWin, c -> c instanceof JSlider));
       until(() -> findComponents(robocodeWin, c -> c instanceof JToolBar)).forEach(c -> ((JToolBar)c).setVisible(false));
@@ -164,14 +167,6 @@ public class BattleController extends BattleAdaptor {
 
   private class BattleThread implements Runnable {
     public void run() {
-      var config = new RobocodeConfig(robocodeDir);
-      config.setTps(battle.getTps());
-      config.setVisibleGround(false);
-      config.setVisibleScanArcs(false);
-      config.setWindowSize(0, 0, BATTLEFIELD_MARGIN + battle.getBattlefieldWidth(), BATTLEFIELD_MARGIN + battle.getBattlefieldHeight());
-      config.setShowResults(false);
-      config.apply();
-
       BattlefieldSpecification battlefield = new BattlefieldSpecification(
         battle.getBattlefieldWidth(), battle.getBattlefieldHeight());
       RobotSpecification[] selectedRobots = engine.getLocalRepository(
