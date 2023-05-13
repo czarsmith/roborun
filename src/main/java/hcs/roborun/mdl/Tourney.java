@@ -72,7 +72,7 @@ public class Tourney {
       desiredTps = 25;
       numMeleeRoundsPerBattle = 5;
       numVsRoundsPerBattle = 5;
-      pregameDelayMillis = 5000L;
+      pregameDelayMillis = 3000L;
       postgameDelayMillis = 5000L;
       battles.clear();
       robots.clear();

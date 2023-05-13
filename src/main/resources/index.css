@@ -19,15 +19,15 @@
 }
 
 .robot-card {
-/*  -fx-background-color: #331111; */
   -fx-background-color: black;
   -fx-border-color: red;
   -fx-border-radius: 5;
-  -fx-effect: dropshadow(one-pass-box, #556666, 10, 0, 3, 3);
+  -fx-effect: dropshadow(one-pass-box, rgb(134, 64, 64), 10, 0, 3, 3);
+  -fx-border-insets: 8px;
+  -fx-background-insets: 8px;
 }
 
 .bracket-battle {
-/*  -fx-background-color: #222222; */
   -fx-background-color: black;
   -fx-border-color: gray;
   -fx-border-radius: 5;
@@ -35,8 +35,8 @@
 }
 
 .bracket-battle.now-playing {
-/*  -fx-background-color: #331111; */
   -fx-border-color: red;
+  -fx-effect: dropshadow(one-pass-box, rgb(134, 64, 64), 10, 0, 3, 3);
 }
 
 .scroll-pane > .viewport {
@@ -78,4 +78,8 @@
   -fx-min-height: 0;
   -fx-pref-height: 0;
   -fx-max-height: 0;
+}
+
+.table-view .column-header .label {
+  -fx-text-fill: black;
 }

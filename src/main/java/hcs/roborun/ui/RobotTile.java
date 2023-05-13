@@ -23,6 +23,7 @@ public class RobotTile extends VBox {
 
     setBorder(new Border(new BorderStroke(Color.GRAY, BorderStrokeStyle.SOLID, new CornerRadii(5), BorderStroke.THIN)));
     setPadding(new Insets(8));
+    setMinWidth(50);
 
     Label displayName = new Label();
     if (robot != null) {

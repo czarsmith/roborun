@@ -11,12 +11,14 @@ import javafx.scene.text.Font;
 
 public class RobotCard extends GridPane {
   private static final int PADDING = 8;
+  private static final int MARGIN = 8;
   private Robot robot;
 
   public RobotCard(Robot robot) {
     this.robot = robot;
     getStyleClass().add("robot-card");
     setPadding(new Insets(PADDING));
+    setMinWidth(160);
 
     ReadOnlyDoubleProperty cardWidth = widthProperty();
 
@@ -33,7 +35,7 @@ public class RobotCard extends GridPane {
 
     Label authorLabel = new Label("By: " + robot.getAuthor());
     authorLabel.setFont(new Font("Arial", 14));
-    authorLabel.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> cardWidth.get() - PADDING * 2 - 2, cardWidth));
+    authorLabel.prefWidthProperty().bind(Bindings.createDoubleBinding(() -> cardWidth.get() - PADDING * 2 - MARGIN * 2 - 2, cardWidth));
     add(authorLabel, 0, 2);
     GridPane.setColumnSpan(authorLabel, 2);
 

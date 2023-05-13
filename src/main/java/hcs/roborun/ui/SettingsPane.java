@@ -19,7 +19,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -32,6 +31,8 @@ public class SettingsPane extends GridPane {
   private TextInput tourneyTimeField;
   private TextInput tpsField;
   private TextInput roundsToWatchField;
+  private TextInput pregameDelayField;
+  private TextInput postgameDelayField;
   private TextInput roundsPerMeleeField;
   private TextInput maxMeleeSizeField;
   private TextInput meleeWidthField;
@@ -48,7 +49,6 @@ public class SettingsPane extends GridPane {
     robots = FXCollections.observableArrayList(ctl.getRobots().stream().map(Robot::new).collect(Collectors.toList()));
 
     robotGrid = new TableView<>();
-    robotGrid.setPrefWidth(400);
     robotGrid.setEditable(true);
     TableColumn<Robot, Boolean> selectedCol = UiUtil.tableCol("Selected", cd -> cd.getValue().getSelectedProperty());
     selectedCol.setCellFactory(col -> new CheckBoxTableCell<>());
@@ -80,6 +80,14 @@ public class SettingsPane extends GridPane {
     roundsToWatchField = new TextInput(Integer.toString(tourney.getMinRoundsToWatch()), "[0-9]", cl);
     form.add(new Label("Min Rounds to Watch: "), 0, 2);
     form.add(roundsToWatchField, 1, 2);
+
+    pregameDelayField = new TextInput(Long.toString(tourney.getPregameDelayMillis()), "[0-9]+", cl);
+    form.add(new Label("Pregame Delay Millis: "), 0, 3);
+    form.add(pregameDelayField, 1, 3);
+
+    postgameDelayField = new TextInput(Long.toString(tourney.getPostgameDelayMillis()), "[0-9]+", cl);
+    form.add(new Label("Postgame Delay Millis: "), 0, 4);
+    form.add(postgameDelayField, 1, 4);
 
     roundsPerMeleeField = new TextInput(Long.toString(tourney.getNumMeleeRoundsPerBattle()), "[1-9][0-9]*", cl);
     form.add(new Label("Rounds Per Melee Battle: "), 2, 0);
@@ -127,6 +135,8 @@ public class SettingsPane extends GridPane {
     tourney.setVsBattlefieldWidth(Integer.parseInt(vsWidthField.getText()));
     tourney.setVsBattlefieldHeight(Integer.parseInt(vsHeightField.getText()));
     tourney.setMinRoundsToWatch(Integer.parseInt(roundsToWatchField.getText()));
+    tourney.setPregameDelayMillis(Long.parseLong(pregameDelayField.getText()));
+    tourney.setPostgameDelayMillis(Long.parseLong(postgameDelayField.getText()));
 
     if (tourney.getRobots().size() < 2) {
       return;
